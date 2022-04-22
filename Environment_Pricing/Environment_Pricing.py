@@ -1,7 +1,5 @@
 import numpy as np
 
-#Each class has its own environment
-
 class Environment_Pricing:
     #Initialize the environment with the probabilities of purchasing a product wrt the price selected
     def __init__(self, purchase_prob, prices, class_probability, lambdas):
