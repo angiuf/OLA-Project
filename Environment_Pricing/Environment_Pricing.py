@@ -1,19 +1,29 @@
 import numpy as np
 
-class Environment_Pricing:
-    #Initialize the environment with the probabilities of purchasing a product wrt the price selected
-    def __init__(self, average, variance, prices, lambdas, alphas_par, P, secondary_products, lambdas_secondary):
-        self.average = average #(5, 3) for each product and each class every user has a different average
-        self.variance = variance #(5, 3) for each product and each class there is a different gaussian variance
-        self.prices = prices #this matrix contains the prices arms for each product (5,4)
-        self.lam = lambdas #expected products bought by each class
-        self.alphas_par = alphas_par #Paramenters of the Dirichlet previously calculated from the expected values
-        self.P = P #(5,5,3) click probability of the secondary product from a primary product for each class
-        self.secondary_products = secondary_products #(5,2) the two secondary products for each product in order
-        self.lambdas_secondary = lambdas_secondary #fixed probability
 
+class EnvironmentPricing:
+    # Initialize the environment with the probabilities of purchasing a product wrt the price selected
+    def __init__(self, mean, variance, prices, lambdas, alphas_par, P, secondary_products, lambda_secondary):
+        self.prices = prices  # (5, 4), prices arms for each product
+
+        # We assume reservation_price ~ Normal(mean, variance)
+        self.mean = mean  # (5, 3), mean of the reservation price for each product and each class
+        self.variance = variance  # (5, 3), variance of the reservation price for each product and each class
+
+        self.lam = lambdas  # (3), the number of items bought ~ 1 + Poisson(lam[class])
+        self.alphas_par = alphas_par  # (6), parameters of the Dirichlet previously calculated from the expected values
+        self.P = P  # (5,5,3) click probability of the secondary product from a primary product for each class
+        self.secondary_products = secondary_products  # (5,2) the two secondary products for each product in order
+        self.lambda_secondary = lambda_secondary  # fixed probability to observe the second secondary product
+
+    # Returns the reward of a single product bought
     def round_single_product(self, product, arm_pulled, extracted_class):
-        reservation_price = np.random.normal(loc = self.average[product, extracted_class], scale= np.sqrt(self.variance[product, extracted_class])) #if it goes below zero this means that the user doesn't buy the product selected
+        mean = self.mean[product, extracted_class]
+        var = self.variance[product, extracted_class]
+
+        # if it goes below zero this means that the user doesn't buy the product selected
+        reservation_price = np.random.normal(loc=mean, scale=np.sqrt(var))
+
         if self.prices[product, arm_pulled] <= reservation_price:
             number_objects = np.random.poisson(lam=self.lam[extracted_class]) + 1
             reward = self.prices[product, arm_pulled] * number_objects
@@ -21,20 +31,24 @@ class Environment_Pricing:
         else:
             return 0
 
-    def alpha_ratioOTD(self):
+    # Returns the alpha ratio of the day
+    def alpha_ratio_otd(self):  # alpha ratio of the day
         return np.random.dirichlet(self.alphas_par)
 
+    # Returns the reward of all the items bought by a single customer
     def round_single_customer(self, alpha_ratio, arms_pulled, class_probability):
         seen_primary = np.full(shape=5, fill_value=False)
         extracted_class = np.random.choice(a=[0, 1, 2], p=class_probability)
-        current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4], p=alpha_ratio) #CASE -1: the customer goes to a competitor
+        current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
+                                           p=alpha_ratio)  # CASE -1: the customer goes to a competitor
 
         if current_product == -1:
-            return -1 #since the customer didn't visit our site, we don't consider him when learning
+            return -1  # since the customer didn't visit our site, we don't consider him when learning
 
         seen_primary[current_product] = True
         return round(self.round_recursive(seen_primary, current_product, 0, extracted_class, arms_pulled), 2)
 
+    # Auxiliary function needed in round_single_customer
     def round_recursive(self, seen_primary, primary, reward_until_now, extracted_class, arms_pulled):
         reward = self.round_single_product(primary, arms_pulled[primary], extracted_class)
 
@@ -46,17 +60,21 @@ class Environment_Pricing:
             secondary_1 = self.secondary_products[primary, 0]
             secondary_2 = self.secondary_products[primary, 1]
 
-            if seen_primary[secondary_1]==0:
-                first_secondary = np.random.binomial(n=1, p=self.P[primary, secondary_1, extracted_class]) #clicks on the shown product to visualize its page
-                if first_secondary==1:
-                    seen_primary[secondary_1]=1
-                    reward_until_now += self.round_recursive(seen_primary, secondary_1, reward_until_now, extracted_class, arms_pulled)
+            if not seen_primary[secondary_1]:
+                buy_first_secondary = np.random.binomial(n=1, p=self.P[
+                    primary, secondary_1, extracted_class])  # clicks on the shown product to visualize its page
+                if buy_first_secondary:
+                    seen_primary[secondary_1] = True
+                    reward_until_now += self.round_recursive(seen_primary, secondary_1, reward_until_now,
+                                                             extracted_class, arms_pulled)
 
-            if seen_primary[secondary_2]==0:
-                p=self.P[primary, secondary_2, extracted_class]*self.lambdas_secondary
-                second_secondary = np.random.binomial(n=1, p=p) #clicks on the shown product to visualize its page
-                if second_secondary == 1:
-                    seen_primary[secondary_2]=1
-                    reward_until_now += self.round_recursive(seen_primary, secondary_2, reward_until_now, extracted_class, arms_pulled)
+            if not seen_primary[secondary_2]:
+                p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
+                buy_second_secondary = np.random.binomial(n=1,
+                                                          p=p_)  # clicks on the shown product to visualize its page
+                if buy_second_secondary:
+                    seen_primary[secondary_2] = True
+                    reward_until_now += self.round_recursive(seen_primary, secondary_2, reward_until_now,
+                                                             extracted_class, arms_pulled)
 
         return reward_until_now

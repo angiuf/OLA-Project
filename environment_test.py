@@ -1,46 +1,54 @@
-from Environment_Pricing.Environment_Pricing import Environment_Pricing
+from Environment_Pricing.Environment_Pricing import EnvironmentPricing
 import numpy as np
+
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.05, -0.1, 0.1, 0.05])
+    changing = np.array([-0.2, -0.1, 0.1, 0.2])
     for i in range(len(product_prices)):
-        prices[i, :] = np.ones(len(changing))*product_prices[i] + np.ones(len(changing))*product_prices[i]*changing
+        prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
+            i] * changing
     return prices
 
-average = np.array([[9, 10, 7],
-                   [3, 3, 2],
-                   [4, 4, 5],
-                   [3, 3.5, 3],
-                   [1.5, 2, 2]])
 
-variance = np.array([[1, 1, 1],
-                   [0.5, 0.5, 0.5],
-                   [0.5, 0.5, 0.5],
-                   [0.5, 0.5, 0.5],
-                   [0.5, 0.5, 0.5]])
+def main():
+    average = np.array([[9, 10, 7],
+                        [3, 3, 2],
+                        [4, 4, 5],
+                        [3, 3.5, 3],
+                        [1.5, 2, 2]])
 
-prices= generate_prices(np.array([8, 3, 5, 4, 2]))
+    variance = np.array([[1, 1, 1],
+                         [0.5, 0.5, 0.5],
+                         [0.5, 0.5, 0.5],
+                         [0.5, 0.5, 0.5],
+                         [0.5, 0.5, 0.5]])
 
-class_probability= np.array([0.4, 0.2, 0.4])
+    prices = generate_prices(np.array([8, 3, 5, 4, 2]))
 
-lambdas= np.array([1, 2, 3])
+    class_probability = np.array([0.4, 0.2, 0.4])
 
-alphas_par = np.array([2, 3, 2, 1, 1, 1])
+    lambdas = np.array([1, 2, 3])
 
-P=np.random.uniform(0.95, 1, size=(5, 5, 3))
+    alphas_par = np.array([2, 1, 1, 1, 1, 1])
 
-secondary_products = np.array([[1, 4],
-                              [0, 2],
-                              [3, 0],
-                              [2, 4],
-                              [0, 1]])
+    P = np.random.uniform(0, 0.5, size=(5, 5, 3))
 
-env1 = Environment_Pricing(average, variance, prices, lambdas, alphas_par, P, secondary_products, lambdas_secondary=0.5)
+    secondary_products = np.array([[1, 4],
+                                   [0, 2],
+                                   [3, 0],
+                                   [2, 4],
+                                   [0, 1]])
 
-#Test for one day and 10 customers, the arms pulled are the minimum
-alpha_ratio = env1.alpha_ratioOTD()
+    env1 = EnvironmentPricing(average, variance, prices, lambdas, alphas_par, P, secondary_products,
+                              lambda_secondary=0.5)
 
-for i in range(10):
-    round = env1.round_single_customer(alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
-    print("Reward:", round)
+    # Test for one day and 10 customers, the arms pulled are the minimum
+    alpha_ratio = env1.alpha_ratio_otd()
+
+    for i in range(20):
+        round = env1.round_single_customer(alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
+        print("Reward:", round)
+
+
+main()
