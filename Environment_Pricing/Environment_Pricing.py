@@ -3,8 +3,9 @@ import numpy as np
 
 class EnvironmentPricing:
     # Initialize the environment with the probabilities of purchasing a product wrt the price selected
-    def __init__(self, mean, variance, prices, lambdas, alphas_par, P, secondary_products, lambda_secondary):
+    def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary):
         self.prices = prices  # (5, 4), prices arms for each product
+        self.costs = costs # (5,1), costs of each product
 
         # We assume reservation_price ~ Normal(mean, variance)
         self.mean = mean  # (5, 3), mean of the reservation price for each product and each class
@@ -16,6 +17,22 @@ class EnvironmentPricing:
         self.secondary_products = secondary_products  # (5,2) the two secondary products for each product in order
         self.lambda_secondary = lambda_secondary  # fixed probability to observe the second secondary product
 
+    def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
+        daily_reward = 0
+        effective_users = 0
+
+        for u in range(0,n_daily_users):
+            reward_single_cust = self.round_single_customer(alpha_ratio, arms_pulled, class_probability)
+            if reward_single_cust != -1:
+                daily_reward += reward_single_cust
+                effective_users += 1
+
+        if effective_users == 0:
+            return 0.0
+        else:
+            return daily_reward / effective_users
+
+
     # Returns the reward of a single product bought
     def round_single_product(self, product, arm_pulled, extracted_class):
         mean = self.mean[product, extracted_class]
@@ -26,7 +43,7 @@ class EnvironmentPricing:
 
         if self.prices[product, arm_pulled] <= reservation_price:
             number_objects = np.random.poisson(lam=self.lam[extracted_class]) + 1
-            reward = self.prices[product, arm_pulled] * number_objects
+            reward = (self.prices[product, arm_pulled] - self.costs[product]) * number_objects
             return round(reward, 2)
         else:
             return 0

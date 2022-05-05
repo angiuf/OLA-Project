@@ -26,6 +26,8 @@ def main():
 
     prices = generate_prices(np.array([8, 3, 5, 4, 2]))
 
+    costs = np.array([0.8, 0.3, 0.5, 0.4, 0.2])
+
     class_probability = np.array([0.4, 0.2, 0.4])
 
     lambdas = np.array([1, 2, 3])
@@ -40,14 +42,14 @@ def main():
                                    [2, 4],
                                    [0, 1]])
 
-    env1 = EnvironmentPricing(average, variance, prices, lambdas, alphas_par, P, secondary_products,
+    env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                               lambda_secondary=0.5)
 
     # Test for one day and 10 customers, the arms pulled are the minimum
     alpha_ratio = env1.alpha_ratio_otd()
 
     for i in range(20):
-        round = env1.round_single_customer(alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
+        round = env1.round_single_day(1000, alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
         print("Reward:", round)
 
 
