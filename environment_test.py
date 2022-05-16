@@ -1,4 +1,4 @@
-from Environment_Pricing.Environment_Pricing import EnvironmentPricing
+from Environment_Pricing.EnvironmentPricing import EnvironmentPricing
 import numpy as np
 
 
@@ -11,7 +11,7 @@ def generate_prices(product_prices):
     return prices
 
 
-def main():
+#def main():
     average = np.array([[9, 10, 7],
                         [3, 3, 2],
                         [4, 4, 5],
@@ -53,4 +53,4 @@ def main():
         print("Reward:", round)
 
 
-main()
+#main()
