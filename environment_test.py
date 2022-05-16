@@ -1,10 +1,11 @@
 from Environment_Pricing.Environment_Pricing import EnvironmentPricing
 import numpy as np
+from Environment_Pricing.GreedyAlgorithm import *
 
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.2, -0.1, 0.1, 0.2])
+    changing = np.array([-0.5, -0.25, 0.25, 0.5])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
@@ -48,9 +49,14 @@ def main():
     # Test for one day and 10 customers, the arms pulled are the minimum
     alpha_ratio = env1.alpha_ratio_otd()
 
-    for i in range(20):
-        round = env1.round_single_day(1000, alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
-        print("Reward:", round)
+    # for i in range(20):
+    #     round = env1.round_single_day(1000, alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
+    #     print("Reward:", round)
+
+    greedy = GreedyAlgorithm(prices, env1, 50, class_probability)
+    print(greedy.optimization_algorithm())
+
+
 
 
 main()
