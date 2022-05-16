@@ -5,7 +5,7 @@ from Environment_Pricing.GreedyAlgorithm import *
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.5, -0.25, 0.25, 0.5])
+    changing = np.array([-0.8, -0.6, -0.5, -0.4])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
@@ -47,16 +47,23 @@ def main():
                               lambda_secondary=0.5)
 
     # Test for one day and 10 customers, the arms pulled are the minimum
-    alpha_ratio = env1.alpha_ratio_otd()
 
+    # alpha_ratio = env1.alpha_ratio_otd()
     # for i in range(20):
     #     round = env1.round_single_day(1000, alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
     #     print("Reward:", round)
 
-    greedy = GreedyAlgorithm(prices, env1, 50, class_probability)
+    mc_days = 100
+    mc_daily_users = 100
+
+    def return_reward(price_arm):
+        reward = 0
+        for j in range(mc_days):
+            reward += env1.round_single_day(mc_daily_users, env1.alpha_ratio_otd(), price_arm, class_probability)
+        return reward/mc_days
+
+    greedy = GreedyAlgorithm(prices, return_reward, 5, 4)
     print(greedy.optimization_algorithm())
-
-
 
 
 main()
