@@ -118,7 +118,7 @@ class EnvironmentPricing:
         tot_reward = 0
         for i in range(0,5):
             for user in range(0,3):
-                #number_objects = np.random.poisson(lam=self.lam[user]) + 1
-                tot_reward += alphas[i+1] * self.calculate_reward(np.array([0,0,0,0,0]), i, arms_pulled, user)
+                number_objects = self.lam[user] + 1
+                tot_reward += alphas[i+1] * class_probability[user] * number_objects * self.calculate_reward(np.array([0,0,0,0,0]), i, arms_pulled, user)
 
         return tot_reward
