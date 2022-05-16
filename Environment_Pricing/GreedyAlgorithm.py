@@ -11,7 +11,7 @@ class GreedyAlgorithm:
 
     def optimization_algorithm(self):
         price_arm = np.array([0, 0, 0, 0, 0])
-        rewards = np.array([0, 0, 0, 0, 0])
+        rewards = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
         initial_reward = 0
         for i in range(self.MC_days):
             initial_reward += self.env.round_single_day(1000, self.env.alpha_ratio_otd(), price_arm,
