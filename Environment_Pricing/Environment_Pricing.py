@@ -5,7 +5,7 @@ class EnvironmentPricing:
     # Initialize the environment with the probabilities of purchasing a product wrt the price selected
     def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary):
         self.prices = prices  # (5, 4), prices arms for each product
-        self.costs = costs # (5,1), costs of each product
+        self.costs = costs  # (5,1), costs of each product
 
         # We assume reservation_price ~ Normal(mean, variance)
         self.mean = mean  # (5, 3), mean of the reservation price for each product and each class
@@ -21,7 +21,7 @@ class EnvironmentPricing:
         daily_reward = 0
         effective_users = 0
 
-        for u in range(0,n_daily_users):
+        for u in range(0, n_daily_users):
             reward_single_cust = self.round_single_customer(alpha_ratio, arms_pulled, class_probability)
             if reward_single_cust != -1:
                 daily_reward += reward_single_cust
@@ -31,7 +31,6 @@ class EnvironmentPricing:
             return 0.0
         else:
             return daily_reward / effective_users
-
 
     # Returns the reward of a single product bought
     def round_single_product(self, product, arm_pulled, extracted_class):
@@ -54,9 +53,9 @@ class EnvironmentPricing:
 
     # Returns the reward of all the items bought by a single customer
     def round_single_customer(self, alpha_ratio, arms_pulled, class_probability):
-        seen_primary = np.full(shape=5, fill_value=False)
-        extracted_class = np.random.choice(a=[0, 1, 2], p=class_probability)
-        current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
+        seen_primary = np.full(shape=len(self.costs), fill_value=False)
+        extracted_class = np.random.choice(a=list(range(len(self.lam))), p=class_probability)
+        current_product = np.random.choice(a=[-1]+list(range(len(self.costs))),
                                            p=alpha_ratio)  # CASE -1: the customer goes to a competitor
 
         if current_product == -1:
