@@ -1,10 +1,12 @@
-from Environment_Pricing.Environment_Pricing import EnvironmentPricing
+from Environment_Pricing.EnvironmentPricing import EnvironmentPricing
+from Environment_Pricing.GreedyAlgorithm import GreedyAlgorithm
+
 import numpy as np
 
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.2, -0.1, 0.1, 0.2])
+    changing = np.array([-0.5, -0.25, 0.5, 0.25])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
