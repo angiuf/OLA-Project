@@ -1,5 +1,6 @@
 from Environment_Pricing.EnvironmentPricing import *
 from GreedyAlgorithm import *
+from Learner import *
 
 def main():
     average = np.array([[9, 10, 7],
@@ -63,10 +64,11 @@ def main():
 
     env = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                               lambda_secondary=0.5)
+    learner = Learner()
 
-
+    lambda_secondary = 0.5
     alphas = [0.5, 0.1, 0.1, 0.1, 0.1, 0.1]
-    reward = env.calculate_total_reward(np.array([0,0,0,0,0]), alphas, class_probability)
+    reward = learner.calculate_total_reward(np.array([0,0,0,0,0]), alphas, class_probability, lambdas, prices, secondary_products, lambda_secondary, P, average, variance)
     print(reward)
     reward = env.round_single_day(1000, alphas, np.array([0, 0, 0, 0, 0]), class_probability)
     print(reward)

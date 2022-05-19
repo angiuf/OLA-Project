@@ -97,28 +97,4 @@ class EnvironmentPricing:
 
         return reward_until_now
 
-    def calculate_reward(self, seen_primary, primary, arms_pulled, user_class):
-        if seen_primary[primary] == True:
-            return 0
-        else:
-            seen_primary[primary] = True
-            buy_mean = self.mean[primary, user_class]
-            buy_var = self.variance[primary, user_class]
-            if arms_pulled[primary] == 4:
-                arms_pulled[primary] -= 1
-            buy_prob = norm.cdf(self.prices[primary, arms_pulled[primary]], buy_mean, np.sqrt(buy_var))
 
-            first_secondary = self.secondary_products[primary, 0]
-            second_secondary = self.secondary_products[primary, 1]
-
-            return buy_prob * self.prices[primary, arms_pulled[primary]] + buy_prob * self.P[primary, first_secondary, user_class] * self.calculate_reward(seen_primary, first_secondary, arms_pulled, user_class) + self.lambda_secondary * buy_prob * self.P[primary, second_secondary, user_class] * self.calculate_reward(seen_primary, second_secondary, arms_pulled, user_class)
-
-
-    def calculate_total_reward(self, arms_pulled, alphas, class_probability):
-        tot_reward = 0
-        for i in range(0,5):
-            for user in range(0,3):
-                number_objects = self.lam[user] + 1
-                tot_reward += alphas[i+1] * class_probability[user] * number_objects * self.calculate_reward(np.array([0,0,0,0,0]), i, arms_pulled, user)
-
-        return tot_reward

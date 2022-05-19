@@ -4,7 +4,7 @@ import numpy as np
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.2, -0.1, 0.1, 0.2])
+    changing = np.array([-.2, -.1, .1, .2])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing

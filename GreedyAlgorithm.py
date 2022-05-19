@@ -1,6 +1,7 @@
 import numpy as np
 from Environment_Pricing.EnvironmentPricing import *
 from environment_test import generate_prices
+from Learner import *
 
 class GreedyAlgorithm():
     def __init__(self, prices):
@@ -40,19 +41,23 @@ class GreedyAlgorithm():
 
         env = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                                   lambda_secondary=0.5)
+        learner = Learner()
 
         price_arm = np.array([0,0,0,0,0])
 
         #alphas = env.alpha_ratio_otd()
         alphas = np.array([0.4,0.1,0.1,0.1,0.1,0.1])
+        lambda_secondary = 0.5
 
         while True:
-            prec_rewards = env.calculate_total_reward(price_arm, alphas, class_probability)
+            prec_rewards = learner.calculate_total_reward(price_arm, alphas, class_probability, lambdas, prices, secondary_products, lambda_secondary, P, average, variance)
             rewards = np.array([0,0,0,0,0])
             for i in range(0,5):
                 add_price = np.array([0,0,0,0,0])
                 add_price[i] = 1
-                rewards[i] = env.calculate_total_reward(price_arm + add_price, alphas, class_probability) #Control on index exciding columns
+                if price_arm[i] + add_price[i] == 4:
+                    add_price[i] -= 1
+                rewards[i] = learner.calculate_total_reward(price_arm + add_price, alphas, class_probability, lambdas, prices, secondary_products, lambda_secondary, P, average, variance)#Control on index exciding columns
             idx = np.argmax(rewards)
             if rewards[idx] <= prec_rewards:
                 return price_arm
