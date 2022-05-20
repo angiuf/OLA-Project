@@ -18,10 +18,11 @@ class EnvironmentPricing:
         self.secondary_products = secondary_products  # (5,2) the two secondary products for each product in order
         self.lambda_secondary = lambda_secondary  # fixed probability to observe the second secondary product
 
+    #RETURNS: total reward normalized and the mean for each product over the users of the purchases (1=buys, 0=not buy)
     def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
         daily_reward = 0
         effective_users = 0
-        purchases_matrix = [[] for _ in range(5)]
+        purchases_matrix = [[] for _ in range(5)] #each element of this list is a list that contains for each time a product is seen as a primary whether a user buys it or not
 
         for u in range(0,n_daily_users):
             reward_single_cust = self.round_single_customer(alpha_ratio, arms_pulled, class_probability, purchases_matrix)
