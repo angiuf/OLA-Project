@@ -21,9 +21,10 @@ class EnvironmentPricing:
     def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
         daily_reward = 0
         effective_users = 0
+        purchases_matrix = [[] for _ in range(5)]
 
         for u in range(0,n_daily_users):
-            reward_single_cust = self.round_single_customer(alpha_ratio, arms_pulled, class_probability)
+            reward_single_cust = self.round_single_customer(alpha_ratio, arms_pulled, class_probability, purchases_matrix)
             if reward_single_cust != -1:
                 daily_reward += reward_single_cust
                 effective_users += 1
@@ -31,11 +32,13 @@ class EnvironmentPricing:
         if effective_users == 0:
             return 0.0
         else:
-            return daily_reward / effective_users
-
+            mean_purchases = np.zeros(5)
+            for i in range(5):
+                mean_purchases[i] = np.mean(purchases_matrix[i])
+            return daily_reward / effective_users, mean_purchases
 
     # Returns the reward of a single product bought
-    def round_single_product(self, product, arm_pulled, extracted_class):
+    def round_single_product(self, product, arm_pulled, extracted_class, purchase_matrix):
         mean = self.mean[product, extracted_class]
         var = self.variance[product, extracted_class]
 
@@ -45,8 +48,10 @@ class EnvironmentPricing:
         if self.prices[product, arm_pulled] <= reservation_price:
             number_objects = np.random.poisson(lam=self.lam[extracted_class]) + 1
             reward = (self.prices[product, arm_pulled] - self.costs[product]) * number_objects
+            purchase_matrix[product].append(1)
             return round(reward, 2)
         else:
+            purchase_matrix[product].append(0)
             return 0
 
     # Returns the alpha ratio of the day
@@ -54,7 +59,7 @@ class EnvironmentPricing:
         return np.random.dirichlet(self.alphas_par)
 
     # Returns the reward of all the items bought by a single customer
-    def round_single_customer(self, alpha_ratio, arms_pulled, class_probability):
+    def round_single_customer(self, alpha_ratio, arms_pulled, class_probability, purchase_matrix):
         seen_primary = np.full(shape=5, fill_value=False)
         extracted_class = np.random.choice(a=[0, 1, 2], p=class_probability)
         current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
@@ -64,11 +69,11 @@ class EnvironmentPricing:
             return -1  # since the customer didn't visit our site, we don't consider him when learning
 
         seen_primary[current_product] = True
-        return round(self.round_recursive(seen_primary, current_product, 0, extracted_class, arms_pulled), 2)
+        return round(self.round_recursive(seen_primary, current_product, 0, extracted_class, arms_pulled, purchase_matrix), 2)
 
     # Auxiliary function needed in round_single_customer
-    def round_recursive(self, seen_primary, primary, reward_until_now, extracted_class, arms_pulled):
-        reward = self.round_single_product(primary, arms_pulled[primary], extracted_class)
+    def round_recursive(self, seen_primary, primary, reward_until_now, extracted_class, arms_pulled, purchase_matrix):
+        reward = self.round_single_product(primary, arms_pulled[primary], extracted_class, purchase_matrix)
 
         if reward == 0:
             return reward_until_now
@@ -84,7 +89,7 @@ class EnvironmentPricing:
                 if buy_first_secondary:
                     seen_primary[secondary_1] = True
                     reward_until_now += self.round_recursive(seen_primary, secondary_1, reward_until_now,
-                                                             extracted_class, arms_pulled)
+                                                             extracted_class, arms_pulled, purchase_matrix)
 
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
@@ -93,8 +98,6 @@ class EnvironmentPricing:
                 if buy_second_secondary:
                     seen_primary[secondary_2] = True
                     reward_until_now += self.round_recursive(seen_primary, secondary_2, reward_until_now,
-                                                             extracted_class, arms_pulled)
+                                                             extracted_class, arms_pulled, purchase_matrix)
 
         return reward_until_now
-
-

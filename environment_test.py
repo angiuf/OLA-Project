@@ -11,7 +11,7 @@ def generate_prices(product_prices):
     return prices
 
 
-#def main():
+def main():
     average = np.array([[9, 10, 7],
                         [3, 3, 2],
                         [4, 4, 5],
@@ -48,9 +48,10 @@ def generate_prices(product_prices):
     # Test for one day and 10 customers, the arms pulled are the minimum
     alpha_ratio = env1.alpha_ratio_otd()
 
-    for i in range(20):
-        round = env1.round_single_day(1000, alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
-        print("Reward:", round)
+    #for i in range(20):
+    round, means = env1.round_single_day(1000, alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
+    print(means)
+    #print("Reward:", round)
 
 
-#main()
+main()
