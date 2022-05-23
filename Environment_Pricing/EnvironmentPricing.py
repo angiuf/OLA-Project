@@ -102,7 +102,7 @@ class EnvironmentPricing:
     def alpha_ratio_otd(self):  # alpha ratio of the day
         return np.random.dirichlet(self.alphas_par)
 
-    def calculate_reward(self, seen_primary, primary, arms_pulled, user_class):
+    def calculate_exact_reward(self, seen_primary, primary, arms_pulled, user_class):
         if seen_primary[primary]:
             return 0
         else:
@@ -115,7 +115,7 @@ class EnvironmentPricing:
 
             # if arms_pulled[primary] == 4:
             #     arms_pulled[primary] -= 1
-            buy_prob = 1 - norm.cdf(self.prices[primary, arms_pulled[primary]], buy_mean, buy_var)
+            buy_prob = 1 - norm.cdf(self.prices[primary, arms_pulled[primary]], buy_mean, np.sqrt(buy_var))
 
             seen1 = copy.deepcopy(seen_primary)
             seen2 = copy.deepcopy(seen_primary)
@@ -123,18 +123,18 @@ class EnvironmentPricing:
             current_reward = buy_prob * (self.prices[primary, arms_pulled[primary]] - self.costs[primary]) * \
                              (1 + self.lam[user_class])
             reward_secondary_1 = buy_prob * self.P[primary, first_secondary, user_class] * \
-                                 self.calculate_reward(seen1, first_secondary, arms_pulled, user_class)
+                                 self.calculate_exact_reward(seen1, first_secondary, arms_pulled, user_class)
             reward_secondary_2 = buy_prob * self.P[primary, second_secondary, user_class] * \
-                                 self.calculate_reward(seen2, second_secondary, arms_pulled, user_class) * \
+                                 self.calculate_exact_reward(seen2, second_secondary, arms_pulled, user_class) * \
                                  self.lambda_secondary
             return current_reward + reward_secondary_1 + reward_secondary_2
 
-    def calculate_total_reward(self, arms_pulled):
+    def calculate_total_exact_reward(self, arms_pulled):
         tot_reward = 0
         for i in range(len(self.costs)):
             for user in range(len(self.lam)):
                 tot_reward += self.alphas_par[i + 1] / (sum(self.alphas_par) - self.alphas_par[0]) * \
-                              self.class_probability[user] * self.calculate_reward(
+                              self.class_probability[user] * self.calculate_exact_reward(
                     np.array([0, 0, 0, 0, 0]), i, arms_pulled, user)
 
         return tot_reward

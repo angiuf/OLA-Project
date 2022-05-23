@@ -49,9 +49,9 @@ def main():
                               lambda_secondary=0.5, class_probability=class_probability)
 
     alphas_par_mean = alphas_par / sum(alphas_par)
-    mc_expected_reward = env1.round_single_day(10000, alphas_par_mean, [0, 0, 0, 0, 0], class_probability)
+    mc_expected_reward = env1.round_single_day(100000, alphas_par_mean, [2, 1, 2, 0, 0], class_probability)
     print("The MC expected reward is: ", mc_expected_reward)
-    print("The exact expected reward is: ", env1.calculate_total_reward(np.array([0, 0, 0, 0, 0])))
+    print("The exact expected reward is: ", env1.calculate_total_exact_reward(np.array([2, 1, 2, 0, 0])))
 
 
 main()
