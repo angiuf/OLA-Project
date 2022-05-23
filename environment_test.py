@@ -14,6 +14,7 @@ def generate_prices(product_prices):
 
 
 def main():
+
     average = np.array([[9, 10, 7],
                         [3, 3, 2],
                         [4, 4, 5],
@@ -34,9 +35,10 @@ def main():
 
     lambdas = np.array([1, 2, 3])
 
-    alphas_par = np.array([2, 1, 1, 1, 1, 1])
+    alphas_par = np.array([5, 1, 1, 1, 1, 1])
 
-    P = np.random.uniform(0, 0.5, size=(5, 5, 3))
+    np.random.seed(5)
+    P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
 
     secondary_products = np.array([[1, 4],
                                    [0, 2],
@@ -47,12 +49,9 @@ def main():
     env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                               lambda_secondary=0.5)
 
-    # Test for one day and 10 customers, the arms pulled are the minimum
-    alpha_ratio = env1.alpha_ratio_otd()
-
-    for i in range(20):
-        round = env1.round_single_day(1000, alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
-        print("Reward:", round)
+    alphas_par_mean = alphas_par / sum(alphas_par)
+    mc_expected_reward = env1.round_single_day(10000, alphas_par_mean, [0, 0, 0, 0, 0], class_probability)[0]
+    print("The MC expected reward is: ", mc_expected_reward)
 
 
 main()

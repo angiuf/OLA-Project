@@ -18,21 +18,6 @@ class EnvironmentPricing:
         self.secondary_products = secondary_products  # (5,2) the two secondary products for each product in order
         self.lambda_secondary = lambda_secondary  # fixed probability to observe the second secondary product
 
-    def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
-        daily_reward = 0
-        effective_users = 0
-
-        for u in range(0, n_daily_users):
-            reward_single_cust = self.round_single_customer(alpha_ratio, arms_pulled, class_probability)
-            if reward_single_cust != -1:
-                daily_reward += reward_single_cust
-                effective_users += 1
-
-        if effective_users == 0:
-            return 0.0
-        else:
-            return daily_reward / effective_users
-
     # Returns the reward of a single product bought
     def round_single_product(self, product, arm_pulled, extracted_class):
         mean = self.mean[product, extracted_class]
@@ -48,25 +33,22 @@ class EnvironmentPricing:
         else:
             return 0
 
-    # Returns the alpha ratio of the day
-    def alpha_ratio_otd(self):  # alpha ratio of the day
-        return np.random.dirichlet(self.alphas_par)
-
     # Returns the reward of all the items bought by a single customer
     def round_single_customer(self, alpha_ratio, arms_pulled, class_probability):
         seen_primary = np.full(shape=len(self.costs), fill_value=False)
         extracted_class = np.random.choice(a=list(range(len(self.lam))), p=class_probability)
-        current_product = np.random.choice(a=[-1]+list(range(len(self.costs))),
+        current_product = np.random.choice(a=[-1] + list(range(len(self.costs))),
                                            p=alpha_ratio)  # CASE -1: the customer goes to a competitor
 
         if current_product == -1:
             return -1  # since the customer didn't visit our site, we don't consider him when learning
 
         seen_primary[current_product] = True
-        return round(self.round_recursive(seen_primary, current_product, 0, extracted_class, arms_pulled), 2)
+        return round(self.round_recursive(seen_primary, current_product, extracted_class, arms_pulled), 2)
 
     # Auxiliary function needed in round_single_customer
-    def round_recursive(self, seen_primary, primary, reward_until_now, extracted_class, arms_pulled):
+    def round_recursive(self, seen_primary, primary, extracted_class, arms_pulled):
+        reward_until_now = 0
         reward = self.round_single_product(primary, arms_pulled[primary], extracted_class)
 
         if reward == 0:
@@ -78,26 +60,45 @@ class EnvironmentPricing:
             secondary_2 = self.secondary_products[primary, 1]
 
             if not seen_primary[secondary_1]:
-                buy_first_secondary = np.random.binomial(n=1, p=self.P[
+                click_first_secondary = np.random.binomial(n=1, p=self.P[
                     primary, secondary_1, extracted_class])  # clicks on the shown product to visualize its page
-                if buy_first_secondary:
+                if click_first_secondary:
                     seen_primary[secondary_1] = True
-                    reward_until_now += self.round_recursive(seen_primary, secondary_1, reward_until_now,
+                    reward_until_now += self.round_recursive(seen_primary, secondary_1,
                                                              extracted_class, arms_pulled)
 
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
-                buy_second_secondary = np.random.binomial(n=1,
+                click_second_secondary = np.random.binomial(n=1,
                                                           p=p_)  # clicks on the shown product to visualize its page
-                if buy_second_secondary:
+                if click_second_secondary:
                     seen_primary[secondary_2] = True
-                    reward_until_now += self.round_recursive(seen_primary, secondary_2, reward_until_now,
+                    reward_until_now += self.round_recursive(seen_primary, secondary_2,
                                                              extracted_class, arms_pulled)
 
         return reward_until_now
 
+    def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
+        daily_reward = 0
+        effective_users = 0
+
+        for u in range(0, n_daily_users):
+            reward_single_cust = self.round_single_customer(alpha_ratio, arms_pulled, class_probability)
+            if reward_single_cust != -1:
+                daily_reward += reward_single_cust
+                effective_users += 1
+
+        if effective_users == 0:
+            return 0.0
+        else:
+            return daily_reward / effective_users
+
+    # Returns the alpha ratio of the day
+    def alpha_ratio_otd(self):  # alpha ratio of the day
+        return np.random.dirichlet(self.alphas_par)
+
     def calculate_reward(self, seen_primary, primary, arms_pulled, user_class):
-        if seen_primary[primary] == True:
+        if seen_primary:
             return 0
         else:
             seen_primary[primary] = True
@@ -110,14 +111,19 @@ class EnvironmentPricing:
             first_secondary = self.secondary_products[primary, 0]
             second_secondary = self.secondary_products[primary, 1]
 
-            return buy_prob * self.prices[primary, arms_pulled[primary]] + buy_prob * self.P[primary, first_secondary, user_class] * self.calculate_reward(seen_primary, first_secondary, arms_pulled, user_class) + self.lambda_secondary * buy_prob * self.P[primary, second_secondary, user_class] * self.calculate_reward(seen_primary, second_secondary, arms_pulled, user_class)
-
+            return buy_prob * self.prices[primary, arms_pulled[primary]] + buy_prob * self.P[
+                primary, first_secondary, user_class] * self.calculate_reward(seen_primary, first_secondary,
+                                                                              arms_pulled,
+                                                                              user_class) + self.lambda_secondary * buy_prob * \
+                   self.P[primary, second_secondary, user_class] * self.calculate_reward(seen_primary, second_secondary,
+                                                                                         arms_pulled, user_class)
 
     def calculate_total_reward(self, arms_pulled, alphas, class_probability):
         tot_reward = 0
-        for i in range(0,5):
-            for user in range(0,3):
+        for i in range(0, 5):
+            for user in range(0, 3):
                 number_objects = self.lam[user] + 1
-                tot_reward += alphas[i+1] * class_probability[user] * number_objects * self.calculate_reward(np.array([0,0,0,0,0]), i, arms_pulled, user)
+                tot_reward += alphas[i + 1] * class_probability[user] * number_objects * self.calculate_reward(
+                    np.array([0, 0, 0, 0, 0]), i, arms_pulled, user)
 
         return tot_reward
