@@ -6,7 +6,7 @@ import numpy as np
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.5, -0.25, 0.5, 0.25])
+    changing = np.array([-0.4, -0.2, 0.2, 0.4])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
@@ -49,9 +49,13 @@ def main():
                               lambda_secondary=0.5, class_probability=class_probability)
 
     alphas_par_mean = alphas_par / sum(alphas_par)
-    mc_expected_reward = env1.round_single_day(100000, alphas_par_mean, [2, 1, 2, 0, 0], class_probability)
+    mc_expected_reward = env1.round_single_day(10000, alphas_par_mean, [2, 1, 2, 0, 0], class_probability)
     print("The MC expected reward is: ", mc_expected_reward)
     print("The exact expected reward is: ", env1.calculate_total_exact_reward(np.array([2, 1, 2, 0, 0])))
 
+    def return_reward(price_arm):
+        return env1.calculate_total_exact_reward(price_arm)
+    greedy = GreedyAlgorithm(prices, return_reward, 5, 4)
+    print(greedy.optimization_algorithm())
 
 main()
