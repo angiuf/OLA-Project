@@ -1,10 +1,12 @@
 import numpy as np
 from scipy.stats import norm
+import copy
 
 
 class EnvironmentPricing:
     # Initialize the environment with the probabilities of purchasing a product wrt the price selected
-    def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary):
+    def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary,
+                 class_probability):
         self.prices = prices  # (5, 4), prices arms for each product
         self.costs = costs  # (5,1), costs of each product
 
@@ -17,6 +19,7 @@ class EnvironmentPricing:
         self.P = P  # (5,5,3) click probability of the secondary product from a primary product for each class
         self.secondary_products = secondary_products  # (5,2) the two secondary products for each product in order
         self.lambda_secondary = lambda_secondary  # fixed probability to observe the second secondary product
+        self.class_probability = class_probability
 
     # Returns the reward of a single product bought
     def round_single_product(self, product, arm_pulled, extracted_class):
@@ -59,24 +62,26 @@ class EnvironmentPricing:
             secondary_1 = self.secondary_products[primary, 0]
             secondary_2 = self.secondary_products[primary, 1]
 
+            s1 = copy.deepcopy(seen_primary)
+            s2 = copy.deepcopy(seen_primary)
+
             if not seen_primary[secondary_1]:
                 click_first_secondary = np.random.binomial(n=1, p=self.P[
                     primary, secondary_1, extracted_class])  # clicks on the shown product to visualize its page
                 if click_first_secondary:
                     seen_primary[secondary_1] = True
-                    reward_until_now += self.round_recursive(seen_primary, secondary_1,
+                    reward_until_now += self.round_recursive(s1, secondary_1,
                                                              extracted_class, arms_pulled)
 
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
                 click_second_secondary = np.random.binomial(n=1,
-                                                          p=p_)  # clicks on the shown product to visualize its page
+                                                            p=p_)  # clicks on the shown product to visualize its page
                 if click_second_secondary:
                     seen_primary[secondary_2] = True
-                    reward_until_now += self.round_recursive(seen_primary, secondary_2,
+                    reward_until_now += self.round_recursive(s2, secondary_2,
                                                              extracted_class, arms_pulled)
-
-        return reward_until_now
+            return reward_until_now
 
     def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
         daily_reward = 0
@@ -98,32 +103,38 @@ class EnvironmentPricing:
         return np.random.dirichlet(self.alphas_par)
 
     def calculate_reward(self, seen_primary, primary, arms_pulled, user_class):
-        if seen_primary:
+        if seen_primary[primary]:
             return 0
         else:
             seen_primary[primary] = True
-            buy_mean = self.mean[primary, user_class]
-            buy_var = self.variance[primary, user_class]
-            if arms_pulled[primary] == 4:
-                arms_pulled[primary] -= 1
-            buy_prob = norm.cdf(self.prices[primary, arms_pulled[primary]], buy_mean, np.sqrt(buy_var))
-
             first_secondary = self.secondary_products[primary, 0]
             second_secondary = self.secondary_products[primary, 1]
 
-            return buy_prob * self.prices[primary, arms_pulled[primary]] + buy_prob * self.P[
-                primary, first_secondary, user_class] * self.calculate_reward(seen_primary, first_secondary,
-                                                                              arms_pulled,
-                                                                              user_class) + self.lambda_secondary * buy_prob * \
-                   self.P[primary, second_secondary, user_class] * self.calculate_reward(seen_primary, second_secondary,
-                                                                                         arms_pulled, user_class)
+            buy_mean = self.mean[primary, user_class]
+            buy_var = self.variance[primary, user_class]
 
-    def calculate_total_reward(self, arms_pulled, alphas, class_probability):
+            # if arms_pulled[primary] == 4:
+            #     arms_pulled[primary] -= 1
+            buy_prob = 1 - norm.cdf(self.prices[primary, arms_pulled[primary]], buy_mean, buy_var)
+
+            seen1 = copy.deepcopy(seen_primary)
+            seen2 = copy.deepcopy(seen_primary)
+
+            current_reward = buy_prob * (self.prices[primary, arms_pulled[primary]] - self.costs[primary]) * \
+                             (1 + self.lam[user_class])
+            reward_secondary_1 = buy_prob * self.P[primary, first_secondary, user_class] * \
+                                 self.calculate_reward(seen1, first_secondary, arms_pulled, user_class)
+            reward_secondary_2 = buy_prob * self.P[primary, second_secondary, user_class] * \
+                                 self.calculate_reward(seen2, second_secondary, arms_pulled, user_class) * \
+                                 self.lambda_secondary
+            return current_reward + reward_secondary_1 + reward_secondary_2
+
+    def calculate_total_reward(self, arms_pulled):
         tot_reward = 0
-        for i in range(0, 5):
-            for user in range(0, 3):
-                number_objects = self.lam[user] + 1
-                tot_reward += alphas[i + 1] * class_probability[user] * number_objects * self.calculate_reward(
+        for i in range(len(self.costs)):
+            for user in range(len(self.lam)):
+                tot_reward += self.alphas_par[i + 1] / (sum(self.alphas_par) - self.alphas_par[0]) * \
+                              self.class_probability[user] * self.calculate_reward(
                     np.array([0, 0, 0, 0, 0]), i, arms_pulled, user)
 
         return tot_reward

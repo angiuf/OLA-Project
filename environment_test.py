@@ -14,7 +14,6 @@ def generate_prices(product_prices):
 
 
 def main():
-
     average = np.array([[9, 10, 7],
                         [3, 3, 2],
                         [4, 4, 5],
@@ -47,11 +46,12 @@ def main():
                                    [0, 1]])
 
     env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
-                              lambda_secondary=0.5)
+                              lambda_secondary=0.5, class_probability=class_probability)
 
     alphas_par_mean = alphas_par / sum(alphas_par)
-    mc_expected_reward = env1.round_single_day(10000, alphas_par_mean, [0, 0, 0, 0, 0], class_probability)[0]
+    mc_expected_reward = env1.round_single_day(10000, alphas_par_mean, [0, 0, 0, 0, 0], class_probability)
     print("The MC expected reward is: ", mc_expected_reward)
+    print("The exact expected reward is: ", env1.calculate_total_reward(np.array([0, 0, 0, 0, 0])))
 
 
 main()
