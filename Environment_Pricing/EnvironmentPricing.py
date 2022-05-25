@@ -31,7 +31,7 @@ class EnvironmentPricing:
         if effective_users == 0:
             return 0.0
         else:
-            return daily_reward / effective_users
+            return daily_reward / n_daily_users
 
 
     # Returns the reward of a single product bought

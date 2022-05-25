@@ -1,6 +1,6 @@
-from Environment_Pricing.EnvironmentPricing import *
 from GreedyAlgorithm import *
 from Learner import *
+from Environment_Pricing.EnvironmentPricingAggregated import EnvironmentPricingAggregated
 
 def main():
     average = np.array([[9, 10, 7],
@@ -62,7 +62,7 @@ def main():
                                    [2, 4],
                                    [0, 1]])
 
-    env = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+    env = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                               lambda_secondary=0.5)
     learner = Learner()
 
@@ -70,9 +70,15 @@ def main():
     alphas = [0.5, 0.1, 0.1, 0.1, 0.1, 0.1]
     reward = learner.calculate_total_reward(np.array([0,0,0,0,0]), alphas, class_probability, lambdas, prices, secondary_products, lambda_secondary, P, average, variance)
     print(reward)
-    reward = env.round_single_day(1000, alphas, np.array([0, 0, 0, 0, 0]), class_probability)
+    reward, a = env.round_single_day(1000, np.array([0, 0, 0, 0, 0]))
     print(reward)
+    print(a)
 
+    alg = GreedyAlgorithm(prices)
+
+    best_arm = alg.optimization_algorithm()
+    print(best_arm)
+"""
     reward = 0
     for d in range(0, 100):
         alphas_rand = env.alpha_ratio_otd()
@@ -81,8 +87,6 @@ def main():
     reward = reward / 100
 
     print(reward)
-    alg = GreedyAlgorithm(prices)
-    best_arm = alg.optimization_algorithm()
-    print(best_arm)
+"""
 
 main()

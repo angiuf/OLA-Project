@@ -1,3 +1,6 @@
+import numpy as np
+from Learner import Learner
+
 class UCB(Learner):
     def __init__(self, n_arms, prices, T):
         super().__init__(n_arms)

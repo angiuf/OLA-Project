@@ -8,6 +8,7 @@ def generate_prices(product_prices):
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
+    print(prices)
     return prices
 
 

@@ -3,7 +3,8 @@ from Environment_Pricing.EnvironmentPricing import *
 from environment_test import generate_prices
 from Learner import *
 
-class GreedyAlgorithm():
+
+class GreedyAlgorithm:
     def __init__(self, prices):
         self.prices = prices
 
@@ -57,7 +58,7 @@ class GreedyAlgorithm():
                 add_price[i] = 1
                 if price_arm[i] + add_price[i] == 4:
                     add_price[i] -= 1
-                rewards[i] = learner.calculate_total_reward(price_arm + add_price, alphas, class_probability, lambdas, prices, secondary_products, lambda_secondary, P, average, variance)#Control on index exciding columns
+                    rewards[i] = learner.calculate_total_reward(price_arm + add_price, alphas, class_probability, lambdas, prices, secondary_products, lambda_secondary, P, average, variance) #Control on index exciding columns
             idx = np.argmax(rewards)
             if rewards[idx] <= prec_rewards:
                 return price_arm
