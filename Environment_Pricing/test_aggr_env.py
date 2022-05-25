@@ -1,6 +1,25 @@
-from Environment_Pricing.EnvironmentPricingAggregated import EnvironmentPricingAggregated
+from EnvironmentPricingAggregated import EnvironmentPricingAggregated
 import numpy as np
-from environment_test import generate_prices
+
+def generate_prices(product_prices):
+    prices = np.zeros((len(product_prices), 4))
+    changing = np.array([-.2, -.1, .1, .2])
+    for i in range(len(product_prices)):
+        prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
+            i] * changing
+    print(prices)
+    return prices
+
+def obj_function(alpha, activation_rates, conversion_rate, prices, N_of_item):
+    value = 0.
+
+    for i in range(1,len(alpha)):
+        sum = 0
+        for j in range(0,5):
+            sum += activation_rates[i-1,j]*conversion_rate[j]*prices[j]*N_of_item
+        value += sum*alpha[i]
+
+    return value
 
 def main():
     average = np.array([[9, 10, 7],
@@ -61,3 +80,48 @@ def main():
                                    [3, 0],
                                    [2, 4],
                                    [0, 1]])
+
+    env = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                                       lambda_secondary=0.5)
+    #learner = Learner(1024)
+
+    lambda_secondary = 0.5
+    alphas = [0.5, 0.1, 0.1, 0.1, 0.1, 0.1]
+    arm = np.array([0, 0, 0, 0, 0])
+
+    #reward = learner.calculate_total_reward(np.array([0, 0, 0, 0, 0]), alphas, class_probability, lambdas, prices,
+    #                                        secondary_products, lambda_secondary, P, average, variance)
+
+    #print(reward)
+    reward, a = env.round_single_day(1000, arm)
+    #print(reward)
+    print("\n\nActivation rates:\n", a)
+
+    conv_rates = env.get_conversion_rates(np.array([0, 0, 0, 0, 0]))
+    N = env.lam
+    pr = prices[:,arm]
+    pr = pr[:,0]
+    print("Prices extraceted:\n", pr)
+
+    obj = obj_function(alphas, a, conv_rates, pr, N)
+    print("Objective function value: ", obj)
+
+
+    #alg = GreedyAlgorithm(prices)
+
+    #best_arm = alg.optimization_algorithm()
+    #print(best_arm)
+
+
+"""
+    reward = 0
+    for d in range(0, 100):
+        alphas_rand = env.alpha_ratio_otd()
+        reward += env.round_single_day(1000, alphas_rand, np.array([0, 0, 0, 0, 0]), class_probability)
+
+    reward = reward / 100
+
+    print(reward)
+"""
+
+main()

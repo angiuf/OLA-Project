@@ -1,5 +1,6 @@
 import numpy as np
-from EnvironmentPricing import *
+from EnvironmentPricing import EnvironmentPricing
+from scipy.stats import norm
 
 
 class EnvironmentPricingAggregated(EnvironmentPricing):
@@ -31,7 +32,6 @@ class EnvironmentPricingAggregated(EnvironmentPricing):
         for i in range(0,5):
             activation_rates[i,:] = zetas[i,:] / n_it_per_prod[i]
 
-        print("Activation rates:\n", activation_rates)
 
         if effective_users == 0:
             return 0.0
@@ -62,12 +62,11 @@ class EnvironmentPricingAggregated(EnvironmentPricing):
 
 
         if current_product == -1:
-            return -1  # since the customer didn't visit our site, we don't consider him when learning
+            return -1, seen_primary, current_product   # since the customer didn't visit our site, we don't consider him when learning
 
         seen_primary[current_product] = True
-        print(seen_primary)
-        print(current_product)
-        return round(self.round_recursive(seen_primary, current_product, 0, arms_pulled), 2), seen_primary, current_product
+        r = round(self.round_recursive(seen_primary, current_product, 0, arms_pulled), 2)
+        return r, seen_primary, current_product
 
 
     # Auxiliary function needed in round_single_customer
@@ -100,3 +99,10 @@ class EnvironmentPricingAggregated(EnvironmentPricing):
                                                             arms_pulled)
 
         return reward_until_now
+
+    def get_conversion_rates(self, arm):
+        conv_rate = np.zeros(5)
+        for i in range(0, len(arm)):
+            conv_rate[i] = norm.cdf(self.prices[i, arm[i]], self.mean[i], np.sqrt(self.variance[i]))
+
+        return conv_rate
