@@ -1,42 +1,30 @@
 import numpy as np
-from EnvironmentPricing import EnvironmentPricing
+from Environment_Pricing.EnvironmentPricing import EnvironmentPricing
 from scipy.stats import norm
 
 
 class EnvironmentPricingAggregated(EnvironmentPricing):
     def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary):
         super().__init__(mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary)
-        self.mean = np.mean(self.mean, axis=1)
-        self.variance = np.mean(self.variance, axis=1)
+        self.mean = np.mean(self.mean, axis=1)          # Expected value of reservation price for user (Aggregated)
+        self.variance = np.mean(self.variance, axis=1)  # Variance of reservation price for user (Aggregated)
 
-        self.lam = np.mean(self.lam)
-        self.P = np.mean(self.P, axis=2)
+        self.lam = np.mean(self.lam)        # The number of items bought ~ 1 + Poisson(lam) (Aggregated)
+        self.P = np.mean(self.P, axis=2)    # Click probability of the secondary product from a primary product (Aggregated)
+
+        self.conv_data = [[] for _ in range(5)]  # List of list. One inner list for each product saving 1 if user buys when shown as primary, 0 otherwise
+        self.alpha_ratio = np.zeros(6)      # Daily value of the alpha ratios
 
 
     def round_single_day(self, n_daily_users, arms_pulled):
-        daily_reward = 0
         effective_users = 0
-        alpha_ratio = self.alpha_ratio_otd()
-        zetas = np.zeros((5,5))
-        n_it_per_prod = np.zeros(5)
+        self.alpha_ratio = self.alpha_ratio_otd()   #Initialize alphas
+        self.conv_data = [[] for _ in range(5)]     #Initialize conversion lists
 
         for u in range(0,n_daily_users):
-            reward_single_cust, seen, chosen_prod = self.round_single_customer(alpha_ratio, arms_pulled)
-            if reward_single_cust != -1:
-                daily_reward += reward_single_cust
-                effective_users += 1
-                zetas[chosen_prod, seen] += 1
-                n_it_per_prod[chosen_prod] += 1
+            self.round_single_customer(arms_pulled)
 
-        activation_rates = np.zeros((5,5))
-        for i in range(0,5):
-            activation_rates[i,:] = zetas[i,:] / n_it_per_prod[i]
-
-
-        if effective_users == 0:
-            return 0.0
-        else:
-            return daily_reward / n_daily_users, activation_rates
+        return self.conv_data
 
     # Returns the reward of a single product bought
     def round_single_product(self, product, arm_pulled):
@@ -47,62 +35,57 @@ class EnvironmentPricingAggregated(EnvironmentPricing):
         reservation_price = np.random.normal(loc=mean, scale=np.sqrt(var))
 
         if self.prices[product, arm_pulled] <= reservation_price:
-            number_objects = np.random.poisson(lam=self.lam) + 1
-            reward = (self.prices[product, arm_pulled] - self.costs[product]) * number_objects
-            return round(reward, 2)
+            self.conv_data[product].append(1)
+            return 1
         else:
+            self.conv_data[product].append(0)
             return 0
 
 
     # Returns the reward of all the items bought by a single customer
-    def round_single_customer(self, alpha_ratio, arms_pulled):
+    def round_single_customer(self, arms_pulled):
         seen_primary = np.full(shape=5, fill_value=False)
         current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
-                                           p=alpha_ratio)  # CASE -1: the customer goes to a competitor
-
+                                           p=self.alpha_ratio)  # CASE -1: the customer goes to a competitor
 
         if current_product == -1:
-            return -1, seen_primary, current_product   # since the customer didn't visit our site, we don't consider him when learning
+            return  # since the customer didn't visit our site, we don't consider him when learning
 
         seen_primary[current_product] = True
-        r = round(self.round_recursive(seen_primary, current_product, 0, arms_pulled), 2)
-        return r, seen_primary, current_product
+        self.round_recursive(seen_primary, current_product, arms_pulled)
+        return
 
 
-    # Auxiliary function needed in round_single_customer
-    def round_recursive(self, seen_primary, primary, reward_until_now, arms_pulled):
-        reward = self.round_single_product(primary, arms_pulled[primary])
+    # Auxiliary function needed in round_single_customer. Explore the tree in DFS
+    def round_recursive(self, seen_primary, primary, arms_pulled):
+        buyed = self.round_single_product(primary, arms_pulled[primary])
 
-        if reward == 0:
-            return reward_until_now
+        if not buyed:
+            return
 
         else:
-            reward_until_now += reward
             secondary_1 = self.secondary_products[primary, 0]
             secondary_2 = self.secondary_products[primary, 1]
 
             if not seen_primary[secondary_1]:
-                buy_first_secondary = np.random.binomial(n=1, p=self.P[
+                click_slot_1 = np.random.binomial(n=1, p=self.P[
                     primary, secondary_1])  # clicks on the shown product to visualize its page
-                if buy_first_secondary:
+                if click_slot_1:
                     seen_primary[secondary_1] = True
-                    reward_until_now += self.round_recursive(seen_primary, secondary_1, reward_until_now
-                                                             , arms_pulled)
+                    self.round_recursive(seen_primary, secondary_1, arms_pulled)
 
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2] * self.lambda_secondary
-                buy_second_secondary = np.random.binomial(n=1,
+                click_slot_2 = np.random.binomial(n=1,
                                                           p=p_)  # clicks on the shown product to visualize its page
-                if buy_second_secondary:
+                if click_slot_2:
                     seen_primary[secondary_2] = True
-                    reward_until_now += self.round_recursive(seen_primary, secondary_2, reward_until_now,
-                                                            arms_pulled)
+                    self.round_recursive(seen_primary, secondary_2, arms_pulled)
 
-        return reward_until_now
 
-    def get_conversion_rates(self, arm):
+    def get_real_conversion_rates(self, arm):
         conv_rate = np.zeros(5)
         for i in range(0, len(arm)):
-            conv_rate[i] = norm.cdf(self.prices[i, arm[i]], self.mean[i], np.sqrt(self.variance[i]))
+            conv_rate[i] = 1 - norm.cdf(self.prices[i, arm[i]], self.mean[i], np.sqrt(self.variance[i]))
 
         return conv_rate

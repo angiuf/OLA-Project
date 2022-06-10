@@ -1,4 +1,5 @@
 from Environment_Pricing.EnvironmentPricing import EnvironmentPricing
+from Environment_Pricing.EnvironmentPricingAggregated import EnvironmentPricingAggregated
 import numpy as np
 
 
@@ -8,11 +9,10 @@ def generate_prices(product_prices):
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
-    print(prices)
     return prices
 
 
-#def main():
+def main():
     average = np.array([[9, 10, 7],
                         [3, 3, 2],
                         [4, 4, 5],
@@ -43,15 +43,21 @@ def generate_prices(product_prices):
                                    [2, 4],
                                    [0, 1]])
 
-    env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+    env1 = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                               lambda_secondary=0.5)
 
-    # Test for one day and 10 customers, the arms pulled are the minimum
-    alpha_ratio = env1.alpha_ratio_otd()
+    conv_data = env1.round_single_day(100, np.array([0, 0, 0, 0, 0]))
+    print("Conversion data:\n", conv_data)
 
-    for i in range(20):
-        round = env1.round_single_day(1000, alpha_ratio, np.array([0, 0, 0, 0, 0]), class_probability)
-        print("Reward:", round)
+    conv_rates = []
+    for i in range(5):
+         conv_rates.append(np.mean(conv_data[i]))
+    print("\nEstimaded conversion rates:\n", conv_rates)
+    print("\nReal conversion rates:\n", env1.get_real_conversion_rates(np.array([0, 0, 0, 0, 0])))
+
+main()
 
 
-#main()
+
+
+
