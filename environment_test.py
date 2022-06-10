@@ -1,5 +1,6 @@
 from Environment_Pricing.EnvironmentPricing import EnvironmentPricing
 from Environment_Pricing.EnvironmentPricingAggregated import EnvironmentPricingAggregated
+from GreedyAlgorithm import *
 import numpy as np
 
 
@@ -43,17 +44,33 @@ def main():
                                    [2, 4],
                                    [0, 1]])
 
+    # Model is a dictionary containing real or estimated parameters:
+    # Conversion rates
+    # Alpha ratios
+    # Mean number of purchased products
+    # Secondary product
+    # P
+    # Lambdas
+
+    model = {
+        "alphas": np.random.uniform(0,1, 6),
+        "act_prob": np.random.uniform(0, 1, (5, 5)),
+        "conversion_rate": np.random.uniform(0, 1, (5, 4)),
+        "quantity": 3,
+        "secondary_products": secondary_products,
+        "P": np.mean(P, axis=2),
+        "lambda_secondary": 0.5
+    }
+
+
+    optimization_algorithm(prices, 5, 4, model)
+
     env1 = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                               lambda_secondary=0.5)
 
     conv_data = env1.round_single_day(100, np.array([0, 0, 0, 0, 0]))
-    print("Conversion data:\n", conv_data)
 
-    conv_rates = []
-    for i in range(5):
-         conv_rates.append(np.mean(conv_data[i]))
-    print("\nEstimaded conversion rates:\n", conv_rates)
-    print("\nReal conversion rates:\n", env1.get_real_conversion_rates(np.array([0, 0, 0, 0, 0])))
+
 
 main()
 
