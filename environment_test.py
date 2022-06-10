@@ -1,5 +1,6 @@
 from Environment_Pricing.EnvironmentPricing import EnvironmentPricing
-from Environment_Pricing.EnvironmentPricingAggregated import EnvironmentPricingAggregated
+from Environment_Pricing.EnvironmentPricingAggregated import \
+    EnvironmentPricingAggregated as EnvironmentPricingAggregated_
 from GreedyAlgorithm import *
 import numpy as np
 
@@ -53,7 +54,7 @@ def main():
     # Lambdas
 
     model = {
-        "alphas": np.random.uniform(0,1, 6),
+        "alphas": np.random.uniform(0, 1, 6),
         "act_prob": np.random.uniform(0, 1, (5, 5)),
         "conversion_rate": np.random.uniform(0, 1, (5, 4)),
         "quantity": 3,
@@ -62,19 +63,12 @@ def main():
         "lambda_secondary": 0.5
     }
 
-
     optimization_algorithm(prices, 5, 4, model)
 
-    env1 = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
-                              lambda_secondary=0.5)
+    env1 = EnvironmentPricingAggregated_(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                                         lambda_secondary=0.5)
 
     conv_data = env1.round_single_day(100, np.array([0, 0, 0, 0, 0]))
 
 
-
 main()
-
-
-
-
-
