@@ -4,16 +4,16 @@ import numpy as np
 
 ### versione 1
 class UCBLearner(Learner):
-    def __init__(self, n_prod, n_price, prices, T):
+    def __init__(self, n_prod, n_price, prices):
         super().__init__(n_prod, n_price)
         self.conv_means = np.zeros((n_prod, n_price))  # now are the means of the conversion rate for each product at each price
         self.conv_widths = np.array([[np.inf for _ in range(n_price)] for _ in range(n_prod)])  # inizializzo a +inf tutti i CI; in questo modo I'll firstly explore each arm (ricorda: scelgo arm con ucb più grande)
         self.prices = prices
-        self.T = T
         self.model['conversion_rate'] = self.conv_means + self.conv_widths
         self.n_prod_price = np.zeros((n_prod, n_price)) # counts number of days i've selected that price for that product
 
     def act(self):  # select the arm which has the highest upper confidence bound
+        self.model['conversion_rate'] = self.conv_means + self.conv_widths
         arm_pulled = optimization_algorithm(self.prices, self.n_prod, self.n_price, self.model)  # a differenza di prima, ora moltiplico per self.prices
         # i.e. ore scelgo arm (i.e. price) che massimizza [estimate(conversion_rate(p))*price]
         # mentre prima sceglievo arm che massimizza [estimate(conversion rate(p))]
