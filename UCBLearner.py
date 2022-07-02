@@ -11,6 +11,7 @@ class UCBLearner(Learner):
         self.prices = prices
         self.T = T
         self.model['conversion_rate'] = self.conv_means + self.conv_widths
+        self.n_prod_price = np.zeros((n_prod, n_price)) # counts number of days i've selected that price for that product
 
     def act(self):  # select the arm which has the highest upper confidence bound
         arm_pulled = optimization_algorithm(self.prices, self.n_prod, self.n_price, self.model)  # a differenza di prima, ora moltiplico per self.prices
@@ -25,11 +26,12 @@ class UCBLearner(Learner):
         for i in range(self.n_prod):
             self.conv_means[i, arm_pulled[i]] = np.mean(
                 self.reward_per_prod_price[i][arm_pulled[i]])  # update the mean of conversion rate of the arm that we pulled
+            self.n_prod_price[i, arm_pulled[i]] += 1
 
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm
-                n = len(self.reward_per_prod_price[i][j])
+                n = self.n_prod_price[i,j]
                 if n > 0:
-                    self.conv_widths[i,j] = np.sqrt(2 * np.log(self.t * self.n_daily_user) / n)   # TODO: n must be n of days I've selected that product with that price
+                    self.conv_widths[i,j] = np.sqrt(2 * np.log(self.t) / n)
                 else:
                     self.conv_widths[i,j] = np.inf
