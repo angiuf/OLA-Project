@@ -1,7 +1,12 @@
-from Environment_Pricing.EnvironmentPricing import EnvironmentPricing
-from Environment_Pricing.GreedyAlgorithm import GreedyAlgorithm
-
+from EnvironmentPricing import EnvironmentPricing
+from GreedyAlgorithm import *
+from EnvironmentPricingAggregated import EnvironmentPricingAggregated
+from Learner import *
+from UCBLearner import *
+from TSLearner import *
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 def generate_prices(product_prices):
@@ -45,17 +50,39 @@ def main():
                                    [2, 4],
                                    [0, 1]])
 
-    env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
-                              lambda_secondary=0.5, class_probability=class_probability)
+    env1 = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                              lambda_secondary=0.5)
 
-    alphas_par_mean = alphas_par / sum(alphas_par)
-    mc_expected_reward = env1.round_single_day(10000, alphas_par_mean, [2, 1, 2, 0, 0], class_probability)
-    print("The MC expected reward is: ", mc_expected_reward)
-    print("The exact expected reward is: ", env1.calculate_total_exact_reward(np.array([2, 1, 2, 0, 0])))
+    model = {"alphas": np.random.uniform(0, 1, 6),
+             "act_prob": np.random.uniform(0, 1, (5, 5)),
+             "conversion_rate": env1.get_real_conversion_rates(),
+             "quantity": 3,
+             "secondary_products": secondary_products,
+             "P": np.mean(P, axis=2),
+             "lambda_secondary": 0.5}
 
-    def return_reward(price_arm):
-        return env1.calculate_total_exact_reward(price_arm)
-    greedy = GreedyAlgorithm(prices, return_reward, 5, 4)
-    print(greedy.optimization_algorithm())
+
+    T = 100
+
+    optimal_arm = optimization_algorithm(prices, 5, 4, model)    # pull the optimal arm
+    optimal_act_rate = MC_simulation(model, env1.get_real_conversion_rates()[range(5), optimal_arm], 5)
+    optimal_reward = return_reward(model, prices[range(5), optimal_arm], env1.get_real_conversion_rates()[range(5), optimal_arm], optimal_act_rate)
+
+    ucb_learner = UCBLearner(5, 4, prices, model)
+    instant_regret = []
+
+    for t in range(T):
+        pulled_arm = ucb_learner.act()
+        env_data = env1.round_single_day()
+        ucb_learner.update()
+        rew = ucb_learner.return_reward(pulled_arm)
+        instant_regret.append(optimal_reward-rew)
+    cumulative_regret = np.cumsum(instant_regret)
+
+    plt.plot(cumulative_regret)
+
 
 main()
+
+
+

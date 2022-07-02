@@ -3,8 +3,8 @@ from GreedyAlgorithm import *
 import numpy as np
 
 class TSLearner(Learner):
-    def __init__(self, n_prod, n_price, prices):
-        super().__init__(n_prod, n_price)
+    def __init__(self, n_prod, n_price, prices, model, n_daily_user):
+        super().__init__(n_prod, n_price, model, n_daily_user)
         alphas = np.ones(n_prod, n_price)
         betas = np.ones(n_prod, n_price)
         self.prices = prices

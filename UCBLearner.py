@@ -4,8 +4,8 @@ import numpy as np
 
 ### versione 1
 class UCBLearner(Learner):
-    def __init__(self, n_prod, n_price, prices):
-        super().__init__(n_prod, n_price)
+    def __init__(self, n_prod, n_price, prices, model):
+        super().__init__(n_prod, n_price, model)
         self.conv_means = np.zeros((n_prod, n_price))  # now are the means of the conversion rate for each product at each price
         self.conv_widths = np.array([[np.inf for _ in range(n_price)] for _ in range(n_prod)])  # inizializzo a +inf tutti i CI; in questo modo I'll firstly explore each arm (ricorda: scelgo arm con ucb più grande)
         self.prices = prices
@@ -35,3 +35,8 @@ class UCBLearner(Learner):
                     self.conv_widths[i,j] = np.sqrt(2 * np.log(self.t) / n)
                 else:
                     self.conv_widths[i,j] = np.inf
+
+
+    def return_reward(self, arm):
+        act_rate = MC_simulation(self.model, self.model["coversion_rate"], self.n_prod)
+        return return_reward(self.model, self.prices[range(5), arm], self.model["conversion_rate"], act_rate)
