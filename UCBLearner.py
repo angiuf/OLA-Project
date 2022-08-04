@@ -13,7 +13,6 @@ class UCBLearner(Learner):
         self.n_prod_price = np.zeros((n_prod, n_price)) # counts number of days i've selected that price for that product
 
     def act(self):  # select the arm which has the highest upper confidence bound
-        self.model['conversion_rate'] = self.conv_means + self.conv_widths
         arm_pulled = optimization_algorithm(self.prices, self.n_prod, self.n_price, self.model)  # a differenza di prima, ora moltiplico per self.prices
         # i.e. ore scelgo arm (i.e. price) che massimizza [estimate(conversion_rate(p))*price]
         # mentre prima sceglievo arm che massimizza [estimate(conversion rate(p))]
@@ -36,7 +35,14 @@ class UCBLearner(Learner):
                 else:
                     self.conv_widths[i,j] = np.inf
 
+        self.model['conversion_rate'] = self.conv_means + self.conv_widths
 
-    def return_reward(self, arm):
-        act_rate = MC_simulation(self.model, self.model["coversion_rate"], self.n_prod)
-        return return_reward(self.model, self.prices[range(5), arm], self.model["conversion_rate"], act_rate)
+
+    def arm_rew(self, arm):
+        extr_conv = np.zeros(self.n_prod)
+
+        for i in range(self.n_prod):
+            extr_conv[i] = self.conv_means[i,arm[i]]
+
+        act_rate = MC_simulation(self.model, extr_conv, self.n_prod)
+        return return_reward(self.model, self.prices[range(5), arm], extr_conv, act_rate)

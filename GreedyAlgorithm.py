@@ -9,7 +9,10 @@ from Environment_Pricing import *
 # P
 # Lambdas
 
-def optimization_algorithm(prices, n_products, n_arms, model):
+
+
+def optimization_algorithm(prices, n_products, n_arms, model, verbose=False):
+    verboseprint = print if verbose else lambda *a, **k,: None
     price_arm = np.zeros(n_products).astype('int') # These are the indeces of the selected price arm
     rewards = np.zeros(n_products)
     extr_prices = prices[range(n_products), price_arm]
@@ -17,7 +20,7 @@ def optimization_algorithm(prices, n_products, n_arms, model):
     act_rate = MC_simulation(model, extr_conversion_rate, n_products)
     initial_reward = return_reward(model, extr_prices, extr_conversion_rate, act_rate)
     prec_reward = initial_reward
-    print('Initial reward: ', initial_reward)
+    verboseprint('Initial reward: ', initial_reward)
     while True:
         max_arms_counter = 0
         for i in range(n_products):
@@ -30,7 +33,7 @@ def optimization_algorithm(prices, n_products, n_arms, model):
                 extr_prices = prices[range(n_products), price_arm+add_price]
                 act_rate = MC_simulation(model, extr_conversion_rate, n_products)
                 rewards[i] = return_reward(model, extr_prices, extr_conversion_rate, act_rate)
-                print("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])
+                verboseprint("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])
 
         if max_arms_counter == n_products:
             return price_arm
@@ -38,14 +41,14 @@ def optimization_algorithm(prices, n_products, n_arms, model):
         idx = np.argmax(rewards)
 
         if rewards[idx] <= prec_reward:
-            print('Final arm chosen: ', price_arm)
+            verboseprint('Final arm chosen: ', price_arm)
             return price_arm
         else:
             add_price = np.zeros(n_products).astype('int')
             add_price[idx] = 1
             price_arm = price_arm + add_price
             prec_reward = rewards[idx]
-            print('Selected amr: ', price_arm, 'with reward: ', rewards[idx])
+            verboseprint('Selected amr: ', price_arm, 'with reward: ', rewards[idx])
 
 def return_reward(model, extr_prices, extr_conversion_rate, act_prob):
     reward = 0
@@ -79,8 +82,10 @@ def MC_simulation(model, extr_conversion_rate, n_products):
 # Auxiliary function needed in round_single_customer. Explore the tree in DFS
 def round_recursive(model, seen_primary, primary, extr_conversion_rate):
 
-
-    buyed = np.random.binomial(1, extr_conversion_rate[primary])
+    if extr_conversion_rate[primary] > 1:
+        buyed = True
+    else:
+        buyed = np.random.binomial(1, extr_conversion_rate[primary])
 
     if not buyed:
         return

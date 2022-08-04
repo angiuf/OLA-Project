@@ -62,7 +62,8 @@ def main():
              "lambda_secondary": 0.5}
 
 
-    T = 100
+    T = 10
+    daily_user = 1000
 
     optimal_arm = optimization_algorithm(prices, 5, 4, model)    # pull the optimal arm
     optimal_act_rate = MC_simulation(model, env1.get_real_conversion_rates()[range(5), optimal_arm], 5)
@@ -73,16 +74,17 @@ def main():
 
     for t in range(T):
         pulled_arm = ucb_learner.act()
-        env_data = env1.round_single_day()
-        ucb_learner.update()
-        rew = ucb_learner.return_reward(pulled_arm)
+        env_data = env1.round_single_day(daily_user, pulled_arm)
+        ucb_learner.update(pulled_arm, env_data)
+        rew = ucb_learner.arm_rew(pulled_arm)
         instant_regret.append(optimal_reward-rew)
+        print("Time: ", t)
     cumulative_regret = np.cumsum(instant_regret)
 
     plt.plot(cumulative_regret)
+    plt.show()
 
 
 main()
-
 
 

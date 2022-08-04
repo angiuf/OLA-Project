@@ -25,4 +25,4 @@ class Learner:
         self.t += 1
         #self.rewards.append(reward)
         for i in range(self.n_prod):
-            self.reward_per_prod_price[i][arm_pulled[i]].append(conv_data[i]) # Append data for conversion rate for each prod, for each price
+            self.reward_per_prod_price[i][arm_pulled[i]].extend(conv_data[i]) # Append data for conversion rate for each prod, for each price
