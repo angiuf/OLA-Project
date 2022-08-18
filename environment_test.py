@@ -53,14 +53,13 @@ def main():
     env1 = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                               lambda_secondary=0.5)
 
-    model = {"alphas": np.random.uniform(0, 1, 6),
-             "act_prob": np.random.uniform(0, 1, (5, 5)),
+    model = {"alphas": np.random.dirichlet(alphas_par),
+             "act_prob": class_probability,
              "conversion_rate": env1.get_real_conversion_rates(),
-             "quantity": 3,
+             "quantity": 2,
              "secondary_products": secondary_products,
              "P": np.mean(P, axis=2),
              "lambda_secondary": 0.5}
-
 
     T = 10
     daily_user = 1000
@@ -69,11 +68,15 @@ def main():
     optimal_act_rate = MC_simulation(model, env1.get_real_conversion_rates()[range(5), optimal_arm], 5)
     optimal_reward = return_reward(model, prices[range(5), optimal_arm], env1.get_real_conversion_rates()[range(5), optimal_arm], optimal_act_rate)
 
-    ucb_learner = UCBLearner(5, 4, prices, model)
+    estimates = [False for i in range(len(model))]
+    estimates[2] = True
+
+    ucb_learner = UCBLearner(5, 4, prices, model, estimates)
     instant_regret = []
 
     for t in range(T):
         pulled_arm = ucb_learner.act()
+
         env_data = env1.round_single_day(daily_user, pulled_arm)
         ucb_learner.update(pulled_arm, env_data)
         rew = ucb_learner.arm_rew(pulled_arm)

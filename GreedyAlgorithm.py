@@ -10,7 +10,7 @@ from Environment_Pricing import *
 # Lambdas
 
 
-
+#Calcola arm ottimale con il greedy algorithm
 def optimization_algorithm(prices, n_products, n_arms, model, verbose=False):
     verboseprint = print if verbose else lambda *a, **k,: None
     price_arm = np.zeros(n_products).astype('int') # These are the indeces of the selected price arm
@@ -50,6 +50,7 @@ def optimization_algorithm(prices, n_products, n_arms, model, verbose=False):
             prec_reward = rewards[idx]
             verboseprint('Selected amr: ', price_arm, 'with reward: ', rewards[idx])
 
+
 def return_reward(model, extr_prices, extr_conversion_rate, act_prob):
     reward = 0
     n_prod = len(extr_prices)
@@ -59,6 +60,7 @@ def return_reward(model, extr_prices, extr_conversion_rate, act_prob):
             reward += model["alphas"][i+1]*act_prob[i,j]*extr_conversion_rate[j]*extr_prices[j]*model["quantity"]
 
     return reward
+
 
 def MC_simulation(model, extr_conversion_rate, n_products):
     act_rates = np.zeros((n_products,n_products))
@@ -77,11 +79,8 @@ def MC_simulation(model, extr_conversion_rate, n_products):
 
     return act_rates
 
-
-
 # Auxiliary function needed in round_single_customer. Explore the tree in DFS
 def round_recursive(model, seen_primary, primary, extr_conversion_rate):
-
     if extr_conversion_rate[primary] > 1:
         buyed = True
     else:

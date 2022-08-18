@@ -15,6 +15,8 @@ class EnvironmentPricingAggregated(EnvironmentPricing):
         self.conv_data = [[] for _ in range(5)]  # List of list. One inner list for each product saving 1 if user buys when shown as primary, 0 otherwise
         self.alpha_ratio = np.zeros(6)      # Daily value of the alpha ratios
 
+    def round_general(self):
+
 
     def round_single_day(self, n_daily_users, arms_pulled):
         effective_users = 0
