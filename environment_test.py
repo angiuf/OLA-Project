@@ -8,7 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
     changing = np.array([-0.4, -0.2, 0.2, 0.4])
@@ -51,7 +50,7 @@ def main():
                                    [0, 1]])
 
     env1 = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
-                              lambda_secondary=0.5)
+                                        lambda_secondary=0.5)
 
     model = {"alphas": np.random.uniform(0, 1, 6),
              "act_prob": np.random.uniform(0, 1, (5, 5)),
@@ -61,13 +60,13 @@ def main():
              "P": np.mean(P, axis=2),
              "lambda_secondary": 0.5}
 
-
     T = 10
     daily_user = 1000
 
-    optimal_arm = optimization_algorithm(prices, 5, 4, model)    # pull the optimal arm
+    optimal_arm = optimization_algorithm(prices, 5, 4, model)  # pull the optimal arm
     optimal_act_rate = MC_simulation(model, env1.get_real_conversion_rates()[range(5), optimal_arm], 5)
-    optimal_reward = return_reward(model, prices[range(5), optimal_arm], env1.get_real_conversion_rates()[range(5), optimal_arm], optimal_act_rate)
+    optimal_reward = return_reward(model, prices[range(5), optimal_arm],
+                                   env1.get_real_conversion_rates()[range(5), optimal_arm], optimal_act_rate)
 
     ucb_learner = UCBLearner(5, 4, prices, model)
     instant_regret = []
@@ -77,7 +76,7 @@ def main():
         env_data = env1.round_single_day(daily_user, pulled_arm)
         ucb_learner.update(pulled_arm, env_data)
         rew = ucb_learner.arm_rew(pulled_arm)
-        instant_regret.append(optimal_reward-rew)
+        instant_regret.append(optimal_reward - rew)
         print("Time: ", t)
     cumulative_regret = np.cumsum(instant_regret)
 
@@ -86,5 +85,3 @@ def main():
 
 
 main()
-
-

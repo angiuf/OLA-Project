@@ -2,13 +2,15 @@ from EnvironmentPricing import *
 from EnvironmentPricingAggregated import *
 import numpy as np
 
+
 class Learner:
     def __init__(self, n_prod, n_price, model):
         self.t = 0
         self.n_price = n_price
         self.n_prod = n_prod
-        #self.rewards = []  # list of all rewards
-        self.reward_per_prod_price = [[[] for _ in range(n_price)] for _ in range(n_prod)]  # list of list to collect rewards of each single arm
+        # self.rewards = []  # list of all rewards
+        self.reward_per_prod_price = [[[] for _ in range(n_price)] for _ in
+                                      range(n_prod)]  # list of list to collect rewards of each single arm
         self.pulled = []
         self.model = model
 
@@ -23,6 +25,7 @@ class Learner:
 
     def update(self, arm_pulled, conv_data):
         self.t += 1
-        #self.rewards.append(reward)
+        # self.rewards.append(reward)
         for i in range(self.n_prod):
-            self.reward_per_prod_price[i][arm_pulled[i]].extend(conv_data[i]) # Append data for conversion rate for each prod, for each price
+            self.reward_per_prod_price[i][arm_pulled[i]].extend(
+                conv_data[i])  # Append data for conversion rate for each prod, for each price

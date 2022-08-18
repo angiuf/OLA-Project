@@ -1,12 +1,15 @@
 import numpy as np
 from scipy.stats import norm
 
+
 class Learner():
 
     def __init(self):
         pass
 
-    def calculate_reward(self, seen_primary, primary, arms_pulled, user_class, lambdas_n_objects, prices, secondary_products, lambda_secondary, click_probabilities, res_price_means, res_price_variances):
+    def calculate_reward(self, seen_primary, primary, arms_pulled, user_class, lambdas_n_objects, prices,
+                         secondary_products, lambda_secondary, click_probabilities, res_price_means,
+                         res_price_variances):
         if seen_primary[primary] == True:
             return 0
         else:
@@ -22,18 +25,22 @@ class Learner():
 
             return buy_prob * prices[primary, arms_pulled[primary]] * number_objects + \
                    buy_prob * click_probabilities[primary, first_secondary, user_class] * \
-                   self.calculate_reward(seen_primary_copy, first_secondary, arms_pulled, user_class, lambdas_n_objects, prices, secondary_products,
+                   self.calculate_reward(seen_primary_copy, first_secondary, arms_pulled, user_class, lambdas_n_objects,
+                                         prices, secondary_products,
                                          lambda_secondary, click_probabilities, res_price_means, res_price_variances) + \
                    lambda_secondary * buy_prob * click_probabilities[primary, second_secondary, user_class] * \
-                   self.calculate_reward(seen_primary_copy, second_secondary, arms_pulled, user_class, lambdas_n_objects, prices, secondary_products,
+                   self.calculate_reward(seen_primary_copy, second_secondary, arms_pulled, user_class,
+                                         lambdas_n_objects, prices, secondary_products,
                                          lambda_secondary, click_probabilities, res_price_means, res_price_variances)
 
-
-    def calculate_total_reward(self, arms_pulled, alphas, class_probability, lambdas_n_objects, prices, secondary_products, lambda_secondary, click_probabilities, res_price_means, res_price_variances):
+    def calculate_total_reward(self, arms_pulled, alphas, class_probability, lambdas_n_objects, prices,
+                               secondary_products, lambda_secondary, click_probabilities, res_price_means,
+                               res_price_variances):
         tot_reward = 0
-        for i in range(0, len(alphas)-1):
+        for i in range(0, len(alphas) - 1):
             for user in range(0, len(class_probability)):
                 tot_reward += alphas[i + 1] * class_probability[user] * self.calculate_reward(
-                    np.array([0, 0, 0, 0, 0]), i, arms_pulled, user, lambdas_n_objects, prices, secondary_products, lambda_secondary, click_probabilities, res_price_means, res_price_variances)
+                    np.array([0, 0, 0, 0, 0]), i, arms_pulled, user, lambdas_n_objects, prices, secondary_products,
+                    lambda_secondary, click_probabilities, res_price_means, res_price_variances)
 
         return tot_reward

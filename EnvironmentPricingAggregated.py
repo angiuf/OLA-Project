@@ -6,22 +6,23 @@ from scipy.stats import norm
 class EnvironmentPricingAggregated(EnvironmentPricing):
     def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary):
         super().__init__(mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary)
-        self.mean = np.mean(self.mean, axis=1)          # Expected value of reservation price for user (Aggregated)
+        self.mean = np.mean(self.mean, axis=1)  # Expected value of reservation price for user (Aggregated)
         self.variance = np.mean(self.variance, axis=1)  # Variance of reservation price for user (Aggregated)
 
-        self.lam = np.mean(self.lam)        # The number of items bought ~ 1 + Poisson(lam) (Aggregated)
-        self.P = np.mean(self.P, axis=2)    # Click probability of the secondary product from a primary product (Aggregated)
+        self.lam = np.mean(self.lam)  # The number of items bought ~ 1 + Poisson(lam) (Aggregated)
+        self.P = np.mean(self.P,
+                         axis=2)  # Click probability of the secondary product from a primary product (Aggregated)
 
-        self.conv_data = [[] for _ in range(5)]  # List of list. One inner list for each product saving 1 if user buys when shown as primary, 0 otherwise
-        self.alpha_ratio = np.zeros(6)      # Daily value of the alpha ratios
-
+        self.conv_data = [[] for _ in range(
+            5)]  # List of list. One inner list for each product saving 1 if user buys when shown as primary, 0 otherwise
+        self.alpha_ratio = np.zeros(6)  # Daily value of the alpha ratios
 
     def round_single_day(self, n_daily_users, arms_pulled):
         effective_users = 0
-        self.alpha_ratio = self.alpha_ratio_otd()   #Initialize alphas
-        self.conv_data = [[] for _ in range(5)]     #Initialize conversion lists
+        self.alpha_ratio = self.alpha_ratio_otd()  # Initialize alphas
+        self.conv_data = [[] for _ in range(5)]  # Initialize conversion lists
 
-        for u in range(0,n_daily_users):
+        for u in range(0, n_daily_users):
             self.round_single_customer(arms_pulled)
 
         return self.conv_data
@@ -41,7 +42,6 @@ class EnvironmentPricingAggregated(EnvironmentPricing):
             self.conv_data[product].append(0)
             return 0
 
-
     # Returns the reward of all the items bought by a single customer
     def round_single_customer(self, arms_pulled):
         seen_primary = np.full(shape=5, fill_value=False)
@@ -54,7 +54,6 @@ class EnvironmentPricingAggregated(EnvironmentPricing):
         seen_primary[current_product] = True
         self.round_recursive(seen_primary, current_product, arms_pulled)
         return
-
 
     # Auxiliary function needed in round_single_customer. Explore the tree in DFS
     def round_recursive(self, seen_primary, primary, arms_pulled):
@@ -77,19 +76,18 @@ class EnvironmentPricingAggregated(EnvironmentPricing):
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2] * self.lambda_secondary
                 click_slot_2 = np.random.binomial(n=1,
-                                                          p=p_)  # clicks on the shown product to visualize its page
+                                                  p=p_)  # clicks on the shown product to visualize its page
                 if click_slot_2:
                     seen_primary[secondary_2] = True
                     self.round_recursive(seen_primary, secondary_2, arms_pulled)
 
-
     def get_real_conversion_rates(self):
-        conv_rate = np.zeros((5,4))
+        conv_rate = np.zeros((5, 4))
         for i in range(0, 5):
             for j in range(0, 4):
-                conv_rate[i,j] = 1 - norm.cdf(self.prices[i,j], self.mean[i], np.sqrt(self.variance[i]))
+                conv_rate[i, j] = 1 - norm.cdf(self.prices[i, j], self.mean[i], np.sqrt(self.variance[i]))
 
         return conv_rate
 
     def get_alpha_param(self):
-        return self.alphas_par/np.sum(self.alphas_par)
+        return self.alphas_par / np.sum(self.alphas_par)
