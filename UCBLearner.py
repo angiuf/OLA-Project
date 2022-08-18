@@ -12,7 +12,8 @@ class UCBLearner(Learner):
         self.conv_widths = np.array([[np.inf for _ in range(n_price)] for _ in range(
             n_prod)])  # inizializzo a +inf tutti i CI; in questo modo I'll firstly explore each arm (ricorda: scelgo arm con ucb più grande)
         self.prices = prices
-        self.model['conversion_rate'] = self.conv_means + self.conv_widths
+        self.model['conv_means'] = self.conv_means
+        self.model['ucb_conversion_rate'] = self.conv_means + self.conv_widths
         self.n_prod_price = np.zeros(
             (n_prod, n_price))  # counts number of days i've selected that price for that product
 
@@ -41,13 +42,4 @@ class UCBLearner(Learner):
                 else:
                     self.conv_widths[i, j] = np.inf
 
-        self.model['conversion_rate'] = self.conv_means + self.conv_widths
-
-    def arm_rew(self, arm):
-        extr_conv = np.zeros(self.n_prod)
-
-        for i in range(self.n_prod):
-            extr_conv[i] = self.conv_means[i, arm[i]]
-
-        act_rate = MC_simulation(self.model, extr_conv, self.n_prod)
-        return return_reward(self.model, self.prices[range(5), arm], extr_conv, act_rate)
+        self.model['ucb_conversion_rate'] = self.conv_means + self.conv_widths

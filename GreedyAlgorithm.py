@@ -57,7 +57,7 @@ def return_reward(model, extr_prices, extr_conversion_rate, act_prob):
 
     for i in range(n_prod):
         for j in range(n_prod):
-            reward += model["alphas"][i + 1] * act_prob[i, j] * extr_conversion_rate[j] * extr_prices[j] * model[
+            reward += model["alphas"][i + 1] / np.sum(model["alphas"]) * act_prob[i, j] * extr_conversion_rate[j] * extr_prices[j] * model[
                 "quantity"]
 
     return reward
