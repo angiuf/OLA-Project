@@ -53,8 +53,17 @@ def main():
     env1 = EnvironmentPricingAggregated(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                               lambda_secondary=0.5)
 
+    # Model is a dictionary containing real or estimated parameters:
+    # Alpha ratios
+    # Probability of seeing a product given that another one is the first (first, product)
+    # Conversion rates
+    # Mean number of purchased products
+    # Secondary product
+    # P, click probability
+    # Lambdas
+
     model = {"alphas": np.random.dirichlet(alphas_par),
-             "act_prob": class_probability,
+             "act_prob": np.random.uniform(0, 1, (5, 5)), #???
              "conversion_rate": env1.get_real_conversion_rates(),
              "quantity": 2,
              "secondary_products": secondary_products,
@@ -69,17 +78,20 @@ def main():
     optimal_reward = return_reward(model, prices[range(5), optimal_arm], env1.get_real_conversion_rates()[range(5), optimal_arm], optimal_act_rate)
 
     estimates = [False for i in range(len(model))]
+    estimates[0] = True
     estimates[2] = True
 
     ucb_learner = UCBLearner(5, 4, prices, model, estimates)
+    to_find = np.array(list(model))[estimates]
     instant_regret = []
 
     for t in range(T):
         pulled_arm = ucb_learner.act()
-
-        env_data = env1.round_single_day(daily_user, pulled_arm)
+        env_data = env1.round_single_day(daily_user, pulled_arm, to_find)
         ucb_learner.update(pulled_arm, env_data)
         rew = ucb_learner.arm_rew(pulled_arm)
+        print(optimal_reward)
+        print(rew)
         instant_regret.append(optimal_reward-rew)
         print("Time: ", t)
     cumulative_regret = np.cumsum(instant_regret)
