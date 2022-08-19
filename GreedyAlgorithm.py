@@ -31,6 +31,7 @@ def optimization_algorithm(prices, n_products, n_arms, model, verbose=False):
                 add_price = np.zeros(n_products).astype('int')
                 add_price[i] = 1
                 extr_prices = prices[range(n_products), price_arm+add_price]
+                extr_conversion_rate = model["conversion_rate"][range(n_products), price_arm]
                 act_rate = MC_simulation(model, extr_conversion_rate, n_products)
                 rewards[i] = return_reward(model, extr_prices, extr_conversion_rate, act_rate)
                 verboseprint("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])
@@ -48,7 +49,7 @@ def optimization_algorithm(prices, n_products, n_arms, model, verbose=False):
             add_price[idx] = 1
             price_arm = price_arm + add_price
             prec_reward = rewards[idx]
-            verboseprint('Selected amr: ', price_arm, 'with reward: ', rewards[idx])
+            verboseprint('Selected arm: ', price_arm, 'with reward: ', rewards[idx])
 
 
 def return_reward(model, extr_prices, extr_conversion_rate, act_prob):

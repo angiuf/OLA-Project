@@ -70,18 +70,18 @@ def main():
              "P": np.mean(P, axis=2),
              "lambda_secondary": 0.5}
 
-    T = 10
+    T = 100
     daily_user = 1000
 
     optimal_arm = optimization_algorithm(prices, 5, 4, model)    # pull the optimal arm
     optimal_act_rate = MC_simulation(model, env1.get_real_conversion_rates()[range(5), optimal_arm], 5)
     optimal_reward = return_reward(model, prices[range(5), optimal_arm], env1.get_real_conversion_rates()[range(5), optimal_arm], optimal_act_rate)
 
-    estimates = [False for i in range(len(model))]
-    estimates[0] = True
+    estimates = [False for _ in range(len(model))]
+    #estimates[0] = True
     estimates[2] = True
 
-    ucb_learner = UCBLearner(5, 4, prices, model, estimates)
+    ucb_learner = UCBLearner(prices, model, estimates)
     to_find = np.array(list(model))[estimates]
     instant_regret = []
 
@@ -90,8 +90,6 @@ def main():
         env_data = env1.round_single_day(daily_user, pulled_arm, to_find)
         ucb_learner.update(pulled_arm, env_data)
         rew = ucb_learner.arm_rew(pulled_arm)
-        print(optimal_reward)
-        print(rew)
         instant_regret.append(optimal_reward-rew)
         print("Time: ", t)
     cumulative_regret = np.cumsum(instant_regret)

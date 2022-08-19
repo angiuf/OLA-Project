@@ -8,7 +8,7 @@ class Learner:
         self.n_price = n_price
         self.n_prod = n_prod
         #self.rewards = []  # list of all rewards
-        self.pulled = [] #A che serve??? Da Silvia
+        #self.pulled = []
         #self.model = model
 
     def rewards(self, to_find):
@@ -25,8 +25,7 @@ class Learner:
 
     def update(self, arm_pulled, data):
         self.t += 1
-        #self.rewards.append(reward)
-        print("Number of estimates: ", len(self.reward_per_prod_price))
+        #print("Number of estimates: ", len(self.reward_per_prod_price))
         for i in range(len(self.reward_per_prod_price)):
             for j in range(self.n_prod):
-                self.reward_per_prod_price[i][j][arm_pulled[j]].append(data[i][j]) # Append data for conversion rate for each prod, for each price, for each value you want to estimate
+                self.reward_per_prod_price[i][j][arm_pulled[j]].append(data[j]) # Append data for conversion rate for each prod, for each price, for each value you want to estimate

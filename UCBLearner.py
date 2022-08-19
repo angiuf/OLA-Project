@@ -4,10 +4,10 @@ import numpy as np
 
 ### versione 1
 class UCBLearner(Learner):
-    def __init__(self, n_prod, n_price, prices, model, estimates):
-        super().__init__(n_prod, n_price)
+    def __init__(self, prices, model, estimates):
+        super().__init__(prices.shape[0], prices.shape[1])
         self.prices = prices
-        self.n_prod_price = np.zeros((n_prod, n_price)) # counts number of days i've selected that price for that product
+        self.n_prod_price = np.zeros((self.n_prod, self.n_price)) # counts number of days i've selected that price for that product
         self.model = model
         self.to_find = np.array(list(model))[estimates] #list of strings that tells what we need to estimate
         super().rewards(self.to_find)
