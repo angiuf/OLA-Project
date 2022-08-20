@@ -18,6 +18,7 @@ class EnvironmentPricing:
         self.secondary_products = secondary_products  # (5, 2) the two secondary products for each product in order
         self.lambda_secondary = lambda_secondary  # fixed probability to observe the second secondary product
 
+    # Returns data from the simulation of one day, data is a list of observations for each customer
     def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
 
         data = []
@@ -41,10 +42,11 @@ class EnvironmentPricing:
             return [0, 0]
 
     # Returns the alpha ratio of the day
-    def alpha_ratio_otd(self):  # alpha ratio of the day
+    def alpha_ratio_otd(self):
         return np.random.dirichlet(self.alphas_par)
 
-    # Returns the reward of all the items bought by a single customer
+    # Returns the data of all the items bought by a single customer, in particular
+    # [reward for each object, number off objects, first objects seen, class of the user, seen objects]
     def round_single_customer(self, alpha_ratio, arms_pulled, class_probability):
         seen_primary = np.full(shape=5, fill_value=False)
         extracted_class = np.random.choice(a=[0, 1, 2], p=class_probability)
@@ -99,6 +101,7 @@ class EnvironmentPricing:
         conv_rate = np.zeros((5, 4))
         for i in range(0, 5):
             for j in range(0, 4):
-                conv_rate[i, j] = 1 - norm.cdf(self.prices[i, j], self.mean[i, class_], np.sqrt(self.variance[i, class_]))
+                conv_rate[i, j] = 1 - norm.cdf(self.prices[i, j], self.mean[i, class_],
+                                               np.sqrt(self.variance[i, class_]))
 
         return conv_rate
