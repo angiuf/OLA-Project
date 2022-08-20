@@ -20,7 +20,7 @@ class UCBLearner(Learner):
                           range(4)]
 
     def act(self):  # select the arm which has the highest upper confidence bound
-        arm_pulled = optimization_algorithm(self.model, False, "ucb_cr", True)
+        arm_pulled = optimization_algorithm(self.model, False, "ucb_cr")
         return arm_pulled
 
     def update(self, arm_pulled, conv_data):

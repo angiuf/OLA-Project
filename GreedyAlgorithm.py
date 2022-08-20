@@ -18,27 +18,18 @@ from EnvironmentPricing import *
 # Runs the optimization algorithm to find the best arm, rates is the string name of what is used as conversion rate,
 # e.g. to find the optimal arm we use the real conversion rates, in ucb we use means + widths, if act_rates is true
 # use the already computed activation rates
-def optimization_algorithm(model, verbose=False, rates="conversion_rate", act_rates_=False):
+def optimization_algorithm(model, verbose=False, rates="conversion_rate"):
     verbose_print = print if verbose else lambda *a, **k,: None
     n_prod = model["n_prod"]
     n_price = model["n_price"]
     price = model["prices"]
-    act_rates_per_super_arm = model["act_rates_per_super_arm"]
 
     price_arm = np.zeros(n_prod).astype('int')  # These are the indexes of the selected price arm
     rewards = np.zeros(n_prod)  # rewards of current arm  increased by one
     extracted_prices = price[range(n_prod), price_arm]
     extracted_cr = model[rates][range(n_prod), price_arm]
 
-    if act_rates_:
-        if len(act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][price_arm[4]]) != 0:
-            act_rate = act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][price_arm[4]]
-        else:
-            act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][
-                price_arm[4]] = MC_simulation(model, extracted_cr, n_prod)
-            act_rate = act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][price_arm[4]]
-    else:
-        act_rate = MC_simulation(model, extracted_cr, n_prod)
+    act_rate = MC_simulation(model, extracted_cr, n_prod)
 
     initial_reward = return_reward(model, extracted_prices, extracted_cr, act_rate)
     previous_reward = initial_reward
@@ -55,12 +46,7 @@ def optimization_algorithm(model, verbose=False, rates="conversion_rate", act_ra
                 extracted_cr = model[rates][range(n_prod), price_arm + add_price]  ## MISSING IN THE MAIN
                 extracted_prices = price[range(n_prod), price_arm + add_price]
 
-                if len(act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][
-                           price_arm[4]]) != 0:
-                    act_rate = act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][
-                        price_arm[4]]
-                else:
-                    act_rate = MC_simulation(model, extracted_cr, n_prod)
+                act_rate = MC_simulation(model, extracted_cr, n_prod)
 
                 rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate)
                 verbose_print("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])

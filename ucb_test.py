@@ -55,15 +55,13 @@ def main():
              "secondary_products": secondary_products,
              "P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
                   class_probability[2],
-             "lambda_secondary": 0.5,
-             "act_rates_per_super_arm": [
-                 [[[[[] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)]
+             "lambda_secondary": 0.5
              }
 
-    T = 100
+    T = 500
     daily_user = 500
 
-    optimal_arm = optimization_algorithm(model, False, "real_conversion_rates", True)  # pull the optimal arm
+    optimal_arm = optimization_algorithm(model, False, "real_conversion_rates")  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
 
     optimal_act_rate = MC_simulation(model, real_conv_rates[range(5), optimal_arm], 5)
@@ -94,14 +92,7 @@ def main():
         env_data = conv_data(data)
         Learner.update(pulled_arm, env_data)
 
-        # Computes activations rate or use the already computed ones
-        act_rates_per_super_arm = model["act_rates_per_super_arm"]
-        if len(act_rates_per_super_arm[pulled_arm[0]][pulled_arm[1]][pulled_arm[2]][pulled_arm[3]][
-                   pulled_arm[4]]) != 0:
-            act_rate = act_rates_per_super_arm[pulled_arm[0]][pulled_arm[1]][pulled_arm[2]][pulled_arm[3]][
-                pulled_arm[4]]
-        else:
-            act_rate = MC_simulation(model, real_conv_rates[range(5), pulled_arm], 5)
+        act_rate = MC_simulation(model, real_conv_rates[range(5), pulled_arm], 5)
 
         rew = return_reward(model, prices[range(5), pulled_arm],
                             real_conv_rates[range(5), pulled_arm], act_rate)
