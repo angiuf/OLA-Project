@@ -17,7 +17,7 @@ class Learner:
     # updates the inner functioning of the algorithm. Both of this function are specific to the learning algorithm
     # that you're implementing
     def reset(self):  # function to reset everything to 0
-        self.__init__(self.n_prod, self.n_price)  # reset
+        self.__init__(self.model)  # reset
 
     def act(self):
         pass
