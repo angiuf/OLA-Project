@@ -59,7 +59,7 @@ def main():
                  [[[[[] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)]
              }
 
-    T = 100
+    T = 500
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False, "real_conversion_rates", True)  # pull the optimal arm
@@ -75,7 +75,7 @@ def main():
     instant_regret = []
 
     # Function that produces 0 1 from the data of the simulation of a day
-    def f(data_):
+    def conv_data(data_):
         result = [[] for _ in range(5)]
         for i_ in range(len(data_)):
             for j_ in range(5):
@@ -90,16 +90,17 @@ def main():
         pulled_arm = [i, i, i, i, i]
         alpha_ratio = env1.alpha_ratio_otd()
         data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
-        env_data = f(data)
+        env_data = conv_data(data)
         Learner.update(pulled_arm, env_data)
 
     for t in range(T):
         pulled_arm = Learner.act()
         alpha_ratio = env1.alpha_ratio_otd()
         data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
-        env_data = f(data)
+        env_data = conv_data(data)
         Learner.update(pulled_arm, env_data)
 
+        # Computes activations rate or use the already computed ones
         act_rates_per_super_arm = model["act_rates_per_super_arm"]
         if len(act_rates_per_super_arm[pulled_arm[0]][pulled_arm[1]][pulled_arm[2]][pulled_arm[3]][
                    pulled_arm[4]]) != 0:
