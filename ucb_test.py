@@ -57,7 +57,10 @@ def main():
     for i in range(3):
         real_conv_rates += env1.get_real_conversion_rates(i) * class_probability[i]
 
-    model = {"alphas": alphas_par,
+    model = {"n_prod": 5,
+             "n_price": 4,
+             "prices": prices,
+            "alphas": alphas_par,
              "act_prob": np.random.uniform(0, 1, (5, 5)),
              "conversion_rate": real_conv_rates,
              "ucb_conversion_rate": real_conv_rates,
@@ -79,7 +82,7 @@ def main():
                                    real_conv_rates[range(5), optimal_arm], optimal_act_rate)
     print("Optimal reward: ", optimal_reward)
 
-    ts_learner = UCBLearner(5, 4, prices, model)
+    ts_learner = UCBLearner(model)
     instant_regret = []
 
     def f(data_):

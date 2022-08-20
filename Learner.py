@@ -4,12 +4,12 @@ import numpy as np
 
 
 class Learner:
-    def __init__(self, n_prod, n_price, model):
+    def __init__(self, model):
         self.t = 0  # time
-        self.n_price = n_price  # number of prices per product
-        self.n_prod = n_prod  # number of products
-        self.reward_per_prod_price = [[[] for _ in range(n_price)] for _ in
-                                      range(n_prod)]  # list of list to collect rewards of each single arm
+        self.n_price = model["n_price"]  # number of prices per product
+        self.n_prod = model["n_prod"]  # number of products
+        self.reward_per_prod_price = [[[] for _ in range(self.n_price)] for _ in
+                                      range(self.n_prod)]  # list of list to collect rewards of each single arm
         self.pulled = []
         self.model = model
 
