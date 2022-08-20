@@ -5,6 +5,7 @@ from EnvironmentPricing import *
 # number of products,
 # number of prices,
 # prices,
+# costs,
 # alpha parameters,
 # real conversion rates,
 # mean number of purchased products,
@@ -86,7 +87,7 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob):
     for i in range(n_prod):
         for j in range(n_prod):
             reward += model["alphas"][i + 1] / np.sum(model["alphas"]) * act_prob[i, j] * extracted_cr[j] * \
-                      extracted_prices[j] * model[
+                      (extracted_prices[j] - model["cost"][j]) * model[
                           "quantity"]
 
     return reward

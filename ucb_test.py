@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.4, -0.2, 0, 0.2])
+    changing = np.array([-0.6, -0.4, -0.2, 0])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
@@ -48,6 +48,7 @@ def main():
     model = {"n_prod": 5,
              "n_price": 4,
              "prices": prices,
+             "cost": costs,
              "alphas": alphas_par,
              "real_conversion_rates": real_conv_rates,
              "quantity": 3,
@@ -59,7 +60,7 @@ def main():
                  [[[[[] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)]
              }
 
-    T = 500
+    T = 100
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False, "real_conversion_rates", True)  # pull the optimal arm
@@ -85,13 +86,6 @@ def main():
                     else:
                         result[j_].append(0)
         return result
-
-    for i in range(4):
-        pulled_arm = [i, i, i, i, i]
-        alpha_ratio = env1.alpha_ratio_otd()
-        data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
-        env_data = conv_data(data)
-        Learner.update(pulled_arm, env_data)
 
     for t in range(T):
         pulled_arm = Learner.act()

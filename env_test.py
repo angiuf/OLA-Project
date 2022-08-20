@@ -13,7 +13,6 @@ def generate_prices(product_prices):
 
 
 def main():
-    print("CIAO")
     average = np.array([[9, 10, 7],
                         [3, 3, 2],
                         [4, 4, 5],
