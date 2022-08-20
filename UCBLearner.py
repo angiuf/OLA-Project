@@ -30,14 +30,15 @@ class UCBLearner(Learner):
             self.cr_means[i, arm_pulled[i]] = np.mean(
                 self.reward_per_prod_price[i][
                     arm_pulled[i]])  # update the mean of conversion rate of the arm that we pulled
-            self.n_prod_price[i, arm_pulled[i]] += len(
-                conv_data[i])  # TODO: += len(conv_data[i]) o t? con len(conv_data[i]) sembra meglio
+            self.n_prod_price[
+                i, arm_pulled[i]] += len(conv_data[i])  # TODO: += len(conv_data[i]) o t? con len(conv_data[i]) sembra meglio
 
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm
                 n = self.n_prod_price[i, j]
                 if n > 0:
-                    self.conv_widths[i, j] = np.sqrt(2 * np.log(self.t) / n)  # TODO: log(n) o log(t)? con n sembra meglio
+                    self.conv_widths[i, j] = np.sqrt(
+                        2 * np.log(self.t) / n)  # TODO: log(n) o log(t)?
                 else:
                     self.conv_widths[i, j] = np.inf
 

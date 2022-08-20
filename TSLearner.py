@@ -10,7 +10,6 @@ class TSLearner(Learner):
         self.betas = np.ones((self.n_prod, self.n_price))  # betas of the TS
         self.prices = model["prices"]  # prices
 
-
     # Returns the chosen arm
     def act(self):
         samples = np.array(

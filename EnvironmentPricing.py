@@ -79,18 +79,18 @@ class EnvironmentPricing:
             secondary_2 = self.secondary_products[primary, 1]
 
             if not seen_primary[secondary_1]:
-                buy_first_secondary = np.random.binomial(n=1, p=self.P[
+                click_first_secondary = np.random.binomial(n=1, p=self.P[
                     primary, secondary_1, extracted_class])  # clicks on the shown product to visualize its page
-                if buy_first_secondary:
+                if click_first_secondary:
                     seen_primary[secondary_1] = True
                     self.round_recursive(seen_primary, secondary_1, extracted_class, arms_pulled,
                                          number_objects, reward_per_object)
 
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
-                buy_second_secondary = np.random.binomial(n=1,
+                click_second_secondary = np.random.binomial(n=1,
                                                           p=p_)  # clicks on the shown product to visualize its page
-                if buy_second_secondary:
+                if click_second_secondary:
                     seen_primary[secondary_2] = True
                     self.round_recursive(seen_primary, secondary_2, extracted_class, arms_pulled,
                                          number_objects, reward_per_object)

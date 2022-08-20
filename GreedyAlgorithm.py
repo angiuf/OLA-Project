@@ -19,7 +19,7 @@ from EnvironmentPricing import *
 # e.g. to find the optimal arm we use the real conversion rates, in ucb we use means + widths, if act_rates is true
 # use the already computed activation rates
 def optimization_algorithm(model, verbose=False, rates="conversion_rate"):
-    verbose_print = print if verbose else lambda *a, **k,: None
+    verbose_print = print if verbose else lambda *a, **k, : None
     n_prod = model["n_prod"]
     n_price = model["n_price"]
     price = model["prices"]
@@ -98,11 +98,11 @@ def MC_simulation(model, extracted_cr, n_products):
 # Auxiliary function needed in round_single_customer. Explore the tree in DFS
 def round_recursive(model, seen_primary, primary, extracted_cr):
     if extracted_cr[primary] > 1:
-        bought = True
+        buy = True
     else:
-        bought = np.random.binomial(1, extracted_cr[primary])
+        buy = np.random.binomial(1, extracted_cr[primary])
 
-    if not bought:
+    if not buy:
         return
 
     else:

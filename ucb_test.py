@@ -29,7 +29,7 @@ def main():
     class_probability = np.array([0.4, 0.2, 0.4])
     lambdas = np.array([1, 2, 3])
     alphas_par = np.array([5, 1, 1, 1, 1, 1])
-    np.random.seed(6)
+    np.random.seed(7)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
     secondary_products = np.array([[1, 4],
                                    [0, 2],
@@ -58,7 +58,7 @@ def main():
              "lambda_secondary": 0.5
              }
 
-    T = 500
+    T = 100
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False, "real_conversion_rates")  # pull the optimal arm
@@ -70,7 +70,7 @@ def main():
                                    real_conv_rates[range(5), optimal_arm], optimal_act_rate)
     print("Optimal reward: ", optimal_reward)
 
-    Learner = UCBLearner(model)
+    Learner = TSLearner(model)
     instant_regret = []
 
     # Function that produces 0 1 from the data of the simulation of a day
@@ -84,6 +84,22 @@ def main():
                     else:
                         result[j_].append(0)
         return result
+
+    for i in range(4):
+        arm = [i, i, i, i, i]
+        alpha_ratio = env1.alpha_ratio_otd()
+        data = env1.round_single_day(daily_user, alpha_ratio, arm, class_probability)
+        env_data = conv_data(data)
+        Learner.update(arm, env_data)
+
+        act_rate = MC_simulation(model, real_conv_rates[range(5), arm], 5)
+
+        rew = return_reward(model, prices[range(5), arm],
+                            real_conv_rates[range(5), arm], act_rate)
+        print("Pulled_arm: ", arm)
+        print(rew)
+        instant_regret.append(optimal_reward - rew)
+        print("Time: ", i)
 
     for t in range(T):
         pulled_arm = Learner.act()
@@ -99,7 +115,7 @@ def main():
         print("Pulled_arm: ", pulled_arm)
         print(rew)
         instant_regret.append(optimal_reward - rew)
-        print("Time: ", t)
+        print("Time: ", t+4)
 
     cumulative_regret = np.cumsum(instant_regret)
 
