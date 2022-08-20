@@ -1,7 +1,3 @@
-from EnvironmentPricing import EnvironmentPricing
-from GreedyAlgorithm import *
-from EnvironmentPricingAggregated import EnvironmentPricingAggregated
-from Learner import *
 from UCBLearner import *
 from TSLearner import *
 import numpy as np
@@ -10,7 +6,7 @@ import matplotlib.pyplot as plt
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.6, -0.4, -0.2, 0])
+    changing = np.array([-0.4, -0.2, 0, 0.2])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
@@ -23,26 +19,18 @@ def main():
                         [4, 4, 5],
                         [3, 3.5, 3],
                         [1.5, 2, 2]])
-
     variance = np.array([[1, 1, 1],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5]])
-
     prices = generate_prices(np.array([8, 3, 5, 4, 2]))
-
     costs = np.array([1.6, 0.6, 1, 0.8, 0.4])
-
     class_probability = np.array([0.4, 0.2, 0.4])
-
     lambdas = np.array([1, 2, 3])
-
     alphas_par = np.array([5, 1, 1, 1, 1, 1])
-
     np.random.seed(6)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
-
     secondary_products = np.array([[1, 4],
                                    [0, 2],
                                    [3, 0],
@@ -83,9 +71,10 @@ def main():
                                    real_conv_rates[range(5), optimal_arm], optimal_act_rate)
     print("Optimal reward: ", optimal_reward)
 
-    ts_learner = UCBLearner(model)
+    Learner = UCBLearner(model)
     instant_regret = []
 
+    # Function that produces 0 1 from the data of the simulation of a day
     def f(data_):
         result = [[] for _ in range(5)]
         for i_ in range(len(data_)):
@@ -102,14 +91,14 @@ def main():
         alpha_ratio = env1.alpha_ratio_otd()
         data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
         env_data = f(data)
-        ts_learner.update(pulled_arm, env_data)
+        Learner.update(pulled_arm, env_data)
 
     for t in range(T):
-        pulled_arm = ts_learner.act()
+        pulled_arm = Learner.act()
         alpha_ratio = env1.alpha_ratio_otd()
         data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
         env_data = f(data)
-        ts_learner.update(pulled_arm, env_data)
+        Learner.update(pulled_arm, env_data)
 
         act_rates_per_super_arm = model["act_rates_per_super_arm"]
         if len(act_rates_per_super_arm[pulled_arm[0]][pulled_arm[1]][pulled_arm[2]][pulled_arm[3]][
