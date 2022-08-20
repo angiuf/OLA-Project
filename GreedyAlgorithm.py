@@ -1,5 +1,5 @@
 import numpy as np
-from Environment_Pricing import *
+from EnvironmentPricing import *
 
 
 # Model is a dictionary containing real or estimated parameters:
@@ -11,13 +11,22 @@ from Environment_Pricing import *
 # Lambdas
 
 
-def optimization_algorithm(prices, n_products, n_arms, model, verbose=False):
+def optimization_algorithm(prices, n_products, n_arms, model, verbose=False, rates="conversion_rate",
+                           act_rates_per_super_arm=False, first_arm = np.zeros(5).astype('int')):
     verboseprint = print if verbose else lambda *a, **k,: None
-    price_arm = np.zeros(n_products).astype('int')  # These are the indeces of the selected price arm
+    price_arm = first_arm  # These are the indeces of the selected price arm
     rewards = np.zeros(n_products)
     extr_prices = prices[range(n_products), price_arm]
-    extr_conversion_rate = model["conversion_rate"][range(n_products), price_arm]
-    act_rate = MC_simulation(model, extr_conversion_rate, n_products)
+    extr_conversion_rate = model[rates][range(n_products), price_arm]
+
+    if act_rates_per_super_arm != False:
+        if len(act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][price_arm[4]])!=0:
+            act_rate = act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][price_arm[4]]
+        else:
+            act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][price_arm[4]] = MC_simulation(model, extr_conversion_rate, n_products)
+            act_rate = act_rates_per_super_arm[price_arm[0]][price_arm[1]][price_arm[2]][price_arm[3]][price_arm[4]]
+    else:
+        act_rate = MC_simulation(model, extr_conversion_rate, n_products)
     initial_reward = return_reward(model, extr_prices, extr_conversion_rate, act_rate)
     prec_reward = initial_reward
     verboseprint('Initial reward: ', initial_reward)
@@ -25,11 +34,12 @@ def optimization_algorithm(prices, n_products, n_arms, model, verbose=False):
         max_arms_counter = 0
         for i in range(n_products):
             if price_arm[i] == n_arms - 1:
-                rewards[i] = 0
+                rewards[i] = -1
                 max_arms_counter += 1
             else:
                 add_price = np.zeros(n_products).astype('int')
                 add_price[i] = 1
+                extr_conversion_rate = model[rates][range(n_products), price_arm + add_price]  ## MISSING IN THE MAIN
                 extr_prices = prices[range(n_products), price_arm + add_price]
                 act_rate = MC_simulation(model, extr_conversion_rate, n_products)
                 rewards[i] = return_reward(model, extr_prices, extr_conversion_rate, act_rate)
@@ -37,11 +47,14 @@ def optimization_algorithm(prices, n_products, n_arms, model, verbose=False):
 
         if max_arms_counter == n_products:
             return price_arm
-
         idx = np.argmax(rewards)
 
         if rewards[idx] <= prec_reward:
             verboseprint('Final arm chosen: ', price_arm)
+            extr_conversion_rate = model[rates][range(n_products), price_arm]  ## MISSING IN THE MAIN
+            extr_prices = prices[range(n_products), price_arm]
+            act_rate = MC_simulation(model, extr_conversion_rate, n_products)
+            rewards = return_reward(model, extr_prices, extr_conversion_rate, act_rate)
             return price_arm
         else:
             add_price = np.zeros(n_products).astype('int')
@@ -57,29 +70,27 @@ def return_reward(model, extr_prices, extr_conversion_rate, act_prob):
 
     for i in range(n_prod):
         for j in range(n_prod):
-            reward += model["alphas"][i + 1] / np.sum(model["alphas"]) * act_prob[i, j] * extr_conversion_rate[j] * extr_prices[j] * model[
-                "quantity"]
+            reward += model["alphas"][i + 1] / np.sum(model["alphas"]) * act_prob[i, j] * extr_conversion_rate[j] * \
+                      extr_prices[j] * model[
+                          "quantity"]
 
     return reward
 
 
 def MC_simulation(model, extr_conversion_rate, n_products):
     act_rates = np.zeros((n_products, n_products))
-    K = 100  # Number of simulation for each seeds
+    K = 1000  # Number of simulation for each seeds
 
     for i in range(n_products):  # Each iteration I take a different product as a seed (i)
         zetas = np.zeros(n_products)  # Zetas is the number of time I've seen a product
         for k in range(K):
             seen_primary = np.full(shape=5, fill_value=False)
             seen_primary[i] = True
-
             round_recursive(model, seen_primary, i, extr_conversion_rate)
             zetas[seen_primary] += 1
 
         act_rates[i, :] = zetas / K
-
     return act_rates
-
 
 # Auxiliary function needed in round_single_customer. Explore the tree in DFS
 def round_recursive(model, seen_primary, primary, extr_conversion_rate):

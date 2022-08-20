@@ -16,10 +16,11 @@ class UCBLearner(Learner):
         self.model['ucb_conversion_rate'] = self.conv_means + self.conv_widths
         self.n_prod_price = np.zeros(
             (n_prod, n_price))  # counts number of days i've selected that price for that product
-
+        self.a_r_p_s_a = [[[[[ [] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in
+                     range(4)]
     def act(self):  # select the arm which has the highest upper confidence bound
         arm_pulled = optimization_algorithm(self.prices, self.n_prod, self.n_price,
-                                            self.model)  # a differenza di prima, ora moltiplico per self.prices
+                                            self.model, False, "ucb_conversion_rate", self.a_r_p_s_a)  # a differenza di prima, ora moltiplico per self.prices
         # i.e. ore scelgo arm (i.e. price) che massimizza [estimate(conversion_rate(p))*price]
         # mentre prima sceglievo arm che massimizza [estimate(conversion rate(p))]
         return arm_pulled
@@ -30,9 +31,8 @@ class UCBLearner(Learner):
         super().update(arm_pulled, conv_data)
         for i in range(self.n_prod):
             self.conv_means[i, arm_pulled[i]] = np.mean(
-                self.reward_per_prod_price[i][
-                    arm_pulled[i]])  # update the mean of conversion rate of the arm that we pulled
-            self.n_prod_price[i, arm_pulled[i]] += 1
+                self.reward_per_prod_price[i][arm_pulled[i]])  # update the mean of conversion rate of the arm that we pulled
+            self.n_prod_price[i, arm_pulled[i]] += len(conv_data[i])
 
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm
@@ -43,3 +43,4 @@ class UCBLearner(Learner):
                     self.conv_widths[i, j] = np.inf
 
         self.model['ucb_conversion_rate'] = self.conv_means + self.conv_widths
+        self.model['conv_means'] = self.conv_means

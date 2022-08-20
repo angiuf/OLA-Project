@@ -51,13 +51,13 @@ class EnvironmentPricing:
         current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
                                            p=alpha_ratio)  # CASE -1: the customer goes to a competitor
 
-        seen_primary[current_product] = True
         number_objects = [0 for _ in range(5)]
         reward_per_object = [0 for _ in range(5)]
 
         if current_product == -1:
             return [reward_per_object, number_objects, current_product, extracted_class, seen_primary]
 
+        seen_primary[current_product] = True
         self.round_recursive(seen_primary, current_product, extracted_class, arms_pulled, number_objects,
                              reward_per_object)
         return [reward_per_object, number_objects, current_product, extracted_class, seen_primary]
