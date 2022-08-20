@@ -20,9 +20,7 @@ class UCBLearner(Learner):
                           range(4)]
 
     def act(self):  # select the arm which has the highest upper confidence bound
-        arm_pulled = optimization_algorithm(self.prices, self.n_prod, self.n_price,
-                                            self.model, False, "ucb_cr",
-                                            self.a_r_p_s_a)
+        arm_pulled = optimization_algorithm(self.model, False, "ucb_cr", True)
         return arm_pulled
 
     def update(self, arm_pulled, conv_data):
@@ -39,7 +37,7 @@ class UCBLearner(Learner):
             for j in range(self.n_price):  # update the confidence bound for all arm
                 n = self.n_prod_price[i, j]
                 if n > 0:
-                    self.conv_widths[i, j] = np.sqrt(2 * np.log(n) / n)  # TODO: log(n) o log(t)? con n sembra meglio
+                    self.conv_widths[i, j] = np.sqrt(2 * np.log(self.t) / n)  # TODO: log(n) o log(t)? con n sembra meglio
                 else:
                     self.conv_widths[i, j] = np.inf
 

@@ -60,20 +60,21 @@ def main():
     model = {"n_prod": 5,
              "n_price": 4,
              "prices": prices,
-            "alphas": alphas_par,
-             "act_prob": np.random.uniform(0, 1, (5, 5)),
-             "conversion_rate": real_conv_rates,
-             "ucb_conversion_rate": real_conv_rates,
+             "alphas": alphas_par,
+             "real_conversion_rates": real_conv_rates,
              "quantity": 3,
              "secondary_products": secondary_products,
              "P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
                   class_probability[2],
-             "lambda_secondary": 0.5}
+             "lambda_secondary": 0.5,
+             "act_rates_per_super_arm": [
+                 [[[[[] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)]
+             }
 
     T = 100
     daily_user = 500
 
-    optimal_arm = optimization_algorithm(prices, 5, 4, model, False, "conversion_rate")  # pull the optimal arm
+    optimal_arm = optimization_algorithm(model, False, "real_conversion_rates", True)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
 
     optimal_act_rate = MC_simulation(model, real_conv_rates[range(5), optimal_arm], 5)
@@ -109,9 +110,17 @@ def main():
         data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
         env_data = f(data)
         ts_learner.update(pulled_arm, env_data)
-        act_prob = MC_simulation(model, real_conv_rates[range(5), pulled_arm], 5)
+
+        act_rates_per_super_arm = model["act_rates_per_super_arm"]
+        if len(act_rates_per_super_arm[pulled_arm[0]][pulled_arm[1]][pulled_arm[2]][pulled_arm[3]][
+                   pulled_arm[4]]) != 0:
+            act_rate = act_rates_per_super_arm[pulled_arm[0]][pulled_arm[1]][pulled_arm[2]][pulled_arm[3]][
+                pulled_arm[4]]
+        else:
+            act_rate = MC_simulation(model, real_conv_rates[range(5), pulled_arm], 5)
+
         rew = return_reward(model, prices[range(5), pulled_arm],
-                                   real_conv_rates[range(5), pulled_arm], act_prob)
+                            real_conv_rates[range(5), pulled_arm], act_rate)
         print("Pulled_arm: ", pulled_arm)
         print(rew)
         instant_regret.append(optimal_reward - rew)
