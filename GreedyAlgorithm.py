@@ -23,13 +23,16 @@ def optimization_algorithm(model, verbose=False, rates="conversion_rate"):
     n_prod = model["n_prod"]
     n_price = model["n_price"]
     price = model["prices"]
+    K = 200 # number of seeds for MC simulation
+    if rates == "real_conversion_rates":
+        K = 10000
 
     price_arm = np.zeros(n_prod).astype('int')  # These are the indexes of the selected price arm
     rewards = np.zeros(n_prod)  # rewards of current arm  increased by one
     extracted_prices = price[range(n_prod), price_arm]
     extracted_cr = model[rates][range(n_prod), price_arm]
 
-    act_rate = MC_simulation(model, extracted_cr, n_prod)
+    act_rate = MC_simulation(model, extracted_cr, n_prod, K)
 
     initial_reward = return_reward(model, extracted_prices, extracted_cr, act_rate)
     previous_reward = initial_reward
@@ -46,7 +49,7 @@ def optimization_algorithm(model, verbose=False, rates="conversion_rate"):
                 extracted_cr = model[rates][range(n_prod), price_arm + add_price]  ## MISSING IN THE MAIN
                 extracted_prices = price[range(n_prod), price_arm + add_price]
 
-                act_rate = MC_simulation(model, extracted_cr, n_prod)
+                act_rate = MC_simulation(model, extracted_cr, n_prod, K)
 
                 rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate)
                 verbose_print("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])
@@ -79,9 +82,9 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob):
     return reward
 
 
-def MC_simulation(model, extracted_cr, n_products):
+def MC_simulation(model, extracted_cr, n_products, K=500):
     act_rates = np.zeros((n_products, n_products))
-    K = 1000  # Number of simulation for each seeds
+    # K = number of simulation for each seeds
 
     for i in range(n_products):  # Each iteration I take a different product as a seed (i)
         zetas = np.zeros(n_products)  # Zetas is the number of time I've seen a product

@@ -58,13 +58,13 @@ def main():
              "lambda_secondary": 0.5
              }
 
-    T = 100
+    T = 200
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False, "real_conversion_rates")  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
 
-    optimal_act_rate = MC_simulation(model, real_conv_rates[range(5), optimal_arm], 5)
+    optimal_act_rate = MC_simulation(model, real_conv_rates[range(5), optimal_arm], 5, 10000)
 
     optimal_reward = return_reward(model, prices[range(5), optimal_arm],
                                    real_conv_rates[range(5), optimal_arm], optimal_act_rate)
@@ -97,7 +97,7 @@ def main():
         rew = return_reward(model, prices[range(5), arm],
                             real_conv_rates[range(5), arm], act_rate)
         print("Pulled_arm: ", arm)
-        print(rew)
+
         instant_regret.append(optimal_reward - rew)
         print("Time: ", i)
 
@@ -109,11 +109,10 @@ def main():
         Learner.update(pulled_arm, env_data)
 
         act_rate = MC_simulation(model, real_conv_rates[range(5), pulled_arm], 5)
-
         rew = return_reward(model, prices[range(5), pulled_arm],
                             real_conv_rates[range(5), pulled_arm], act_rate)
         print("Pulled_arm: ", pulled_arm)
-        print(rew)
+
         instant_regret.append(optimal_reward - rew)
         print("Time: ", t+4)
 
