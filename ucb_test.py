@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.6, -0.4, -0.2, 0])
+    changing = np.array([-0.6, -0.2, 0.2, 0.6])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
@@ -58,7 +58,7 @@ def main():
              "lambda_secondary": 0.5
              }
 
-    T = 200
+    T = 200 - 4
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False, "real_conversion_rates")  # pull the optimal arm
@@ -70,7 +70,7 @@ def main():
                                    real_conv_rates[range(5), optimal_arm], optimal_act_rate)
     print("Optimal reward: ", optimal_reward)
 
-    Learner = TSLearner(model)
+    Learner = UCBLearner(model)
     instant_regret = []
 
     # Function that produces 0 1 from the data of the simulation of a day

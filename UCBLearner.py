@@ -16,9 +16,6 @@ class UCBLearner(Learner):
         self.n_prod_price = np.zeros(
             (self.n_prod, self.n_price))  # counts number of times a price has been selected for a product
 
-        self.a_r_p_s_a = [[[[[[] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in range(4)] for _ in
-                          range(4)]
-
     def act(self):  # select the arm which has the highest upper confidence bound
         arm_pulled = optimization_algorithm(self.model, False, "ucb_cr")
         return arm_pulled
@@ -38,7 +35,7 @@ class UCBLearner(Learner):
                 n = self.n_prod_price[i, j]
                 if n > 0:
                     self.conv_widths[i, j] = np.sqrt(
-                        2 * np.log(self.t) / n)  # TODO: log(n) o log(t)?
+                        2 * np.log(self.t) / n)  # TODO: log(t) o log(t) * daily_users?
                 else:
                     self.conv_widths[i, j] = np.inf
 
