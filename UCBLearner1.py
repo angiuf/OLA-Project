@@ -3,7 +3,7 @@ from GreedyAlgorithm import *
 import numpy as np
 
 
-class UCBLearner(Learner):
+class UCBLearner1(Learner):
     def __init__(self, model):
         super().__init__(model)
         self.cr_means = np.zeros(
@@ -17,11 +17,10 @@ class UCBLearner(Learner):
             (self.n_prod, self.n_price))  # counts number of times a price has been selected for a product
 
     def act(self):  # select the arm which has the highest upper confidence bound
-        arm_pulled = optimization_algorithm(self.model, False, "ucb_cr")
+        arm_pulled = optimization_algorithm(self.model, False, rates="ucb_cr")
         return arm_pulled
 
     def update(self, arm_pulled, conv_data):
-
         super().update(arm_pulled, conv_data)
         for i in range(self.n_prod):
             self.cr_means[i, arm_pulled[i]] = np.mean(
