@@ -131,6 +131,7 @@ def main():
     for t in range(T):
         pulled_arm = learner.act()
         alpha_ratio = env1.alpha_ratio_otd()
+        # TODO: controllare la generazione del number of objects nel caso aggregato
         data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
         cr_data = conv_data(data)
         ar_data = alpha_data(data)
