@@ -60,3 +60,6 @@ class UCBLearner2(Learner):
 
     def printq(self):
         print(self.quantity_mean)
+
+    def printalpha(self):
+        print(self.alpha_means)

@@ -55,26 +55,29 @@ class EnvironmentPricing:
 
         number_objects = [0 for _ in range(5)]
         reward_per_object = [0 for _ in range(5)]
+        bought_products = np.full(shape=5, fill_value=False)
 
         if current_product == -1:
-            return [reward_per_object, number_objects, current_product, extracted_class, seen_primary]
+            return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products]
 
         seen_primary[current_product] = True
         self.round_recursive(seen_primary, current_product, extracted_class, arms_pulled, number_objects,
-                             reward_per_object)
-        return [reward_per_object, number_objects, current_product, extracted_class, seen_primary]
+                             reward_per_object, bought_products)
+        return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products]
 
     # Auxiliary function needed in round_single_customer
     def round_recursive(self, seen_primary, primary, extracted_class, arms_pulled, number_objects,
-                        reward_per_object):
+                        reward_per_object, bought_products):
         reward_per_object[primary], number_objects[primary] = self.round_single_product(primary, arms_pulled[primary],
                                                                                         extracted_class)
         reward = reward_per_object[primary]
 
         if reward == 0:
+            bought_products[primary] = False
             return
 
         else:
+            bought_products[primary] = True
             secondary_1 = self.secondary_products[primary, 0]
             secondary_2 = self.secondary_products[primary, 1]
 
@@ -84,7 +87,7 @@ class EnvironmentPricing:
                 if click_first_secondary:
                     seen_primary[secondary_1] = True
                     self.round_recursive(seen_primary, secondary_1, extracted_class, arms_pulled,
-                                         number_objects, reward_per_object)
+                                         number_objects, reward_per_object, bought_products)
 
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
@@ -93,7 +96,7 @@ class EnvironmentPricing:
                 if click_second_secondary:
                     seen_primary[secondary_2] = True
                     self.round_recursive(seen_primary, secondary_2, extracted_class, arms_pulled,
-                                         number_objects, reward_per_object)
+                                         number_objects, reward_per_object, bought_products)
 
         return
 

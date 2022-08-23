@@ -1,4 +1,4 @@
-from UCBLearner2 import *
+from TSLearner2 import *
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -59,7 +59,7 @@ def main():
              }
 
     T = 200 - 4
-    daily_user = 2000
+    daily_user = 1000
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
@@ -70,7 +70,7 @@ def main():
                                    real_conv_rates[range(5), optimal_arm], optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
     print("Optimal reward: ", optimal_reward)
 
-    learner = UCBLearner2(model)
+    learner = TSLearner2(model)
     instant_regret = []
 
     # Function that produces 0 1 from the data of the simulation of a day
@@ -131,7 +131,6 @@ def main():
     for t in range(T):
         pulled_arm = learner.act()
         alpha_ratio = env1.alpha_ratio_otd()
-        # TODO: controllare la generazione del number of objects nel caso aggregato
         data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
         cr_data = conv_data(data)
         ar_data = alpha_data(data)

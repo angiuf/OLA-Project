@@ -6,7 +6,7 @@ class Learner:
         self.reward_per_prod_price = [[[] for _ in range(self.n_price)] for _ in
                                       range(self.n_prod)]  # list of list to collect rewards of each single arm (0, 1)
         self.reward_per_prod_alpha = [[] for _ in range(self.n_prod+1)]  # list of list to collect the first product seen by the users
-        self.reward_per_quantity = [] # list of list to collect rewards of each single arm (0, 1)
+        self.reward_per_quantity = [] # list to collect the number of objects bought by the users
 
         self.model_0 = model
         self.model = model
