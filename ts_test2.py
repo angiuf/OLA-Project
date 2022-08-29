@@ -53,7 +53,7 @@ def main():
              "real_conversion_rates": real_conv_rates,
              "real_quantity": 3,
              "secondary_products": secondary_products,
-             "P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
+             "real_P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
                   class_probability[2],
              "lambda_secondary": 0.5
              }

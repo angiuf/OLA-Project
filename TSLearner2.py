@@ -40,3 +40,8 @@ class TSLearner2(Learner):
         self.model['alpha_means'] = self.alpha_means
         self.model['quantity_mean'] = self.quantity_mean
 
+    def printq(self):
+        print(self.quantity_mean)
+
+    def printalpha(self):
+        print(self.alpha_means)

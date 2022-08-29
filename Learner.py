@@ -7,6 +7,7 @@ class Learner:
                                       range(self.n_prod)]  # list of list to collect rewards of each single arm (0, 1)
         self.reward_per_prod_alpha = [[] for _ in range(self.n_prod+1)]  # list of list to collect the first product seen by the users
         self.reward_per_quantity = [] # list to collect the number of objects bought by the users
+        self.reward_per_clicks = [[0 for _ in range(self.n_prod)] for _ in range(self.n_prod)]
 
         self.model_0 = model
         self.model = model
@@ -35,3 +36,12 @@ class Learner:
             self.reward_per_prod_alpha[i].extend(alpha_data[i])
 
         self.reward_per_quantity.extend(quantity_data)
+
+    def update3(self, arm_pulled, conv_data, clicks_data):
+        self.t += 1
+        for i in range(self.n_prod):
+            self.reward_per_prod_price[i][arm_pulled[i]].extend(conv_data[i])  # Append data for conversion rate for each prod, for each price
+
+        for i in range(self.n_prod):
+            for j in range(self.n_prod):
+                self.reward_per_clicks[i][j] += clicks_data[i][j]

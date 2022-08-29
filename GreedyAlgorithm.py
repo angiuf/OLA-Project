@@ -18,7 +18,8 @@ from EnvironmentPricing import *
 # Runs the optimization algorithm to find the best arm, rates is the string name of what is used as conversion rate,
 # e.g. to find the optimal arm we use the real conversion rates, in ucb we use means + widths, if act_rates is true
 # use the already computed activation rates
-def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", alphas="real_alpha_ratio", quantity = "real_quantity"):
+def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", alphas="real_alpha_ratio",
+                           quantity="real_quantity", clicks='real_P'):
     verbose_print = print if verbose else lambda *a, **k, : None
     n_prod = model["n_prod"]
     n_price = model["n_price"]
@@ -35,7 +36,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     extracted_quantity = model[quantity]
 
 
-    act_rate = MC_simulation(model, extracted_cr, n_prod, K)
+    act_rate = MC_simulation(model, extracted_cr, n_prod, K, clicks)
 
     initial_reward = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha, extracted_quantity)
     previous_reward = initial_reward
@@ -52,7 +53,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
                 extracted_cr = model[rates][range(n_prod), price_arm + add_price]  ## MISSING IN THE MAIN
                 extracted_prices = price[range(n_prod), price_arm + add_price]
 
-                act_rate = MC_simulation(model, extracted_cr, n_prod, K)
+                act_rate = MC_simulation(model, extracted_cr, n_prod, K, clicks)
 
                 rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha, extracted_quantity)
                 verbose_print("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])
@@ -84,7 +85,7 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alp
     return reward
 
 
-def MC_simulation(model, extracted_cr, n_products, K=500):
+def MC_simulation(model, extracted_cr, n_products, K=500, clicks='real_P'):
     act_rates = np.zeros((n_products, n_products))
     # K = number of simulation for each seeds
 
@@ -93,7 +94,7 @@ def MC_simulation(model, extracted_cr, n_products, K=500):
         for k in range(K):
             seen_primary = np.full(shape=5, fill_value=False)
             seen_primary[i] = True
-            round_recursive(model, seen_primary, i, extracted_cr)
+            round_recursive(model, seen_primary, i, extracted_cr, clicks)
             zetas[seen_primary] += 1
 
         act_rates[i, :] = zetas / K
@@ -101,7 +102,7 @@ def MC_simulation(model, extracted_cr, n_products, K=500):
 
 
 # Auxiliary function needed in round_single_customer. Explore the tree in DFS
-def round_recursive(model, seen_primary, primary, extracted_cr):
+def round_recursive(model, seen_primary, primary, extracted_cr, clicks):
     if extracted_cr[primary] > 1:
         buy = True
     else:
@@ -115,16 +116,15 @@ def round_recursive(model, seen_primary, primary, extracted_cr):
         secondary_2 = model["secondary_products"][primary, 1]
 
         if not seen_primary[secondary_1]:
-            click_slot_1 = np.random.binomial(n=1, p=model["P"][
-                primary, secondary_1])  # clicks on the shown product to visualize its page
+            click_slot_1 = np.random.binomial(n=1, p=model[clicks][primary, secondary_1])  # clicks on the shown product to visualize its page
             if click_slot_1:
                 seen_primary[secondary_1] = True
-                round_recursive(model, seen_primary, secondary_1, extracted_cr)
+                round_recursive(model, seen_primary, secondary_1, extracted_cr, clicks)
 
         if not seen_primary[secondary_2]:
-            p_ = model["P"][primary, secondary_2] * model["lambda_secondary"]
+            p_ = model[clicks][primary, secondary_2] * model["lambda_secondary"]
             click_slot_2 = np.random.binomial(n=1,
                                               p=p_)  # clicks on the shown product to visualize its page
             if click_slot_2:
                 seen_primary[secondary_2] = True
-                round_recursive(model, seen_primary, secondary_2, extracted_cr)
+                round_recursive(model, seen_primary, secondary_2, extracted_cr, clicks)

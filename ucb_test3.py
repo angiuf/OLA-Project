@@ -1,4 +1,4 @@
-from UCBLearner2 import *
+from UCBLearner3 import *
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -11,6 +11,29 @@ def generate_prices(product_prices):
             i] * changing
     return prices
 
+
+# Function that produces 0 1 from the data of the simulation of a day
+def conv_data(data):
+    result = [[] for _ in range(5)]
+    for i_ in range(len(data)):
+        for j_ in range(5):
+            if data[i_][4][j_]:
+                if data[i_][1][j_] > 0:
+                    result[j_].append(1)
+                else:
+                    result[j_].append(0)
+    return result
+
+
+def clicks_data(data_):
+    result = [[0 for _ in range(5)] for _ in range(5)]
+
+    for i in range(len(data_)):
+        for j in range(5):
+            for k in range(5):
+                result[j][k] += data_[i][6][j][k]
+
+    return result
 
 def main():
     average = np.array([[9, 10, 7],
@@ -58,7 +81,7 @@ def main():
              "lambda_secondary": 0.5
              }
 
-    T = 200 - 4
+    T = 100 - 4
     daily_user = 2000
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
@@ -70,47 +93,16 @@ def main():
                                    real_conv_rates[range(5), optimal_arm], optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
     print("Optimal reward: ", optimal_reward)
 
-    learner = UCBLearner2(model)
+    learner = UCBLearner3(model)
     instant_regret = []
-
-    # Function that produces 0 1 from the data of the simulation of a day
-    def conv_data(data_):
-        result = [[] for _ in range(5)]
-        for i_ in range(len(data_)):
-            for j_ in range(5):
-                if data[i_][4][j_]:
-                    if data_[i_][1][j_] > 0:
-                        result[j_].append(1)
-                    else:
-                        result[j_].append(0)
-        return result
-
-    def alpha_data(data_):
-        result = [[] for _ in range(6)]
-        for i_ in range(len(data_)):
-            for j_ in range(6):
-                if data_[i_][2] == j_-1:
-                    result[j_].append(1)
-                else:
-                    result[j_].append(0)
-        return result
-
-    def quantity_data(data_):
-        result = []
-        for i_ in range(len(data_)):
-            for j_ in range(5):
-                if data[i_][5][j_]:
-                    result.append(data_[i_][1][j_])
-        return result
 
     for t in range(4):
         arm = [t, t, t, t, t]
         alpha_ratio = env1.alpha_ratio_otd()
         data = env1.round_single_day(daily_user, alpha_ratio, arm, class_probability)
         cr_data = conv_data(data)
-        ar_data = alpha_data(data)
-        q_data = quantity_data(data)
-        learner.update(arm, cr_data, ar_data, q_data)
+        cl_data = clicks_data(data)
+        learner.update(arm, cr_data, cl_data)
 
         # act_rate = MC_simulation(model, real_conv_rates[range(5), arm], 5)
         # rew = return_reward(model, prices[range(5), arm],
@@ -133,9 +125,8 @@ def main():
         alpha_ratio = env1.alpha_ratio_otd()
         data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
         cr_data = conv_data(data)
-        ar_data = alpha_data(data)
-        q_data = quantity_data(data)
-        learner.update(pulled_arm, cr_data, ar_data, q_data)
+        cl_data = clicks_data(data)
+        learner.update(pulled_arm, cr_data, cl_data)
 
         # act_rate = MC_simulation(model, real_conv_rates[range(5), pulled_arm], 5)
         # rew = return_reward(model, prices[range(5), pulled_arm],

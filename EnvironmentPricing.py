@@ -56,18 +56,19 @@ class EnvironmentPricing:
         number_objects = [0 for _ in range(5)]
         reward_per_object = [0 for _ in range(5)]
         bought_products = np.full(shape=5, fill_value=False)
+        clicks = np.zeros((5,5))
 
         if current_product == -1:
-            return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products]
+            return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products, clicks]
 
         seen_primary[current_product] = True
         self.round_recursive(seen_primary, current_product, extracted_class, arms_pulled, number_objects,
-                             reward_per_object, bought_products)
-        return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products]
+                             reward_per_object, bought_products, clicks)
+        return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products, clicks]
 
     # Auxiliary function needed in round_single_customer
     def round_recursive(self, seen_primary, primary, extracted_class, arms_pulled, number_objects,
-                        reward_per_object, bought_products):
+                        reward_per_object, bought_products, clicks):
         reward_per_object[primary], number_objects[primary] = self.round_single_product(primary, arms_pulled[primary],
                                                                                         extracted_class)
         reward = reward_per_object[primary]
@@ -85,18 +86,20 @@ class EnvironmentPricing:
                 click_first_secondary = np.random.binomial(n=1, p=self.P[
                     primary, secondary_1, extracted_class])  # clicks on the shown product to visualize its page
                 if click_first_secondary:
+                    clicks[primary][secondary_1] += 1
                     seen_primary[secondary_1] = True
                     self.round_recursive(seen_primary, secondary_1, extracted_class, arms_pulled,
-                                         number_objects, reward_per_object, bought_products)
+                                         number_objects, reward_per_object, bought_products, clicks)
 
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
                 click_second_secondary = np.random.binomial(n=1,
                                                           p=p_)  # clicks on the shown product to visualize its page
                 if click_second_secondary:
+                    clicks[primary][secondary_2] += 1
                     seen_primary[secondary_2] = True
                     self.round_recursive(seen_primary, secondary_2, extracted_class, arms_pulled,
-                                         number_objects, reward_per_object, bought_products)
+                                         number_objects, reward_per_object, bought_products, clicks)
 
         return
 
