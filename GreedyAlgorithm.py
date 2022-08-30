@@ -79,8 +79,7 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alp
 
     for i in range(n_prod):
         for j in range(n_prod):
-            reward += extracted_alphas[i + 1] * act_prob[i, j] * extracted_cr[j] * \
-                      (extracted_prices[j] - model["cost"][j]) * extracted_quantity
+            reward += extracted_alphas[i + 1] * act_prob[i, j] * extracted_cr[j] * (extracted_prices[j] - model["cost"][j]) * extracted_quantity
 
     return reward
 
