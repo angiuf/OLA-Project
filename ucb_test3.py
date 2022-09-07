@@ -10,7 +10,7 @@ def main():
     prices = model["prices"]
 
     T = 60 - 4
-    n_exp = 5
+    n_exp = 50
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
@@ -76,8 +76,6 @@ def main():
             instant_regret_rew[i].append(optimal_reward - rew)
             instant_regret_obs[i].append(optimal_reward - obs_reward)
             print("Time: ", t+4)
-        learner.printp()
-        print(model["real_P"])
         learner.reset()
 
     show_results(instant_regret_rew, instant_regret_obs, "UCB test, third case")
