@@ -9,7 +9,7 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 600 - 4
+    T = 100 - 4
     n_exp = 1
     daily_user = 50
 
@@ -27,6 +27,7 @@ def main():
     instant_regret_obs = [[] for _ in range(n_exp)]
 
     for i in range(n_exp):
+        print("Experiment number", i)
         for t in range(4):
             arm = [t, t, t, t, t]
             alpha_ratio = env1.alpha_ratio_otd()

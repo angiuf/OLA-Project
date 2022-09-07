@@ -25,9 +25,8 @@ class UCBLearner3(Learner):
         super().update3(arm_pulled, conv_data, clicks_data)
 
         for i in range(self.n_prod):
-            self.cr_means[i, arm_pulled[i]] = np.mean(
-                self.reward_per_prod_price[i][
-                    arm_pulled[i]])  # update the mean of conversion rate of the arm that we pulled
+            if len(self.reward_per_prod_price[i][arm_pulled[i]]): # if empty = 0, else mean
+                self.cr_means[i, arm_pulled[i]] = np.mean(self.reward_per_prod_price[i][arm_pulled[i]])   # update the mean of conversion rate of the arm that we pulled
             self.n_prod_price[
                 i, arm_pulled[i]] += len(conv_data[i])  # TODO: += len(conv_data[i]) o t? con len(conv_data[i]) sembra meglio
 
