@@ -20,11 +20,11 @@ from EnvironmentPricing import *
 # use the already computed activation rates
 def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", alphas="real_alpha_ratio",
                            quantity="real_quantity", clicks='real_P'):
-    verbose_print = print if verbose else lambda *a, **k, : None
+    verbose_print = print if verbose else lambda *a, **k,: None
     n_prod = model["n_prod"]
     n_price = model["n_price"]
     price = model["prices"]
-    K = 200 # number of seeds for MC simulation
+    K = 200  # number of seeds for MC simulation
     if rates == "real_conversion_rates":
         K = 10000
 
@@ -34,7 +34,6 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     extracted_cr = model[rates][range(n_prod), price_arm]
     extracted_alpha = model[alphas]
     extracted_quantity = model[quantity]
-
 
     act_rate = MC_simulation(model, extracted_cr, n_prod, K, clicks)
 
@@ -55,7 +54,8 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
 
                 act_rate = MC_simulation(model, extracted_cr, n_prod, K, clicks)
 
-                rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha, extracted_quantity)
+                rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha,
+                                           extracted_quantity)
                 verbose_print("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])
 
         if max_arms_counter == n_prod:
@@ -79,7 +79,8 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alp
 
     for i in range(n_prod):
         for j in range(n_prod):
-            reward += extracted_alphas[i + 1] * act_prob[i, j] * extracted_cr[j] * (extracted_prices[j] - model["cost"][j]) * extracted_quantity
+            reward += extracted_alphas[i + 1] * act_prob[i, j] * np.min([extracted_cr[j], 1]) * (
+                        extracted_prices[j] - model["cost"][j]) * extracted_quantity
 
     return reward
 
@@ -115,7 +116,8 @@ def round_recursive(model, seen_primary, primary, extracted_cr, clicks):
         secondary_2 = model["secondary_products"][primary, 1]
 
         if not seen_primary[secondary_1]:
-            click_slot_1 = np.random.binomial(n=1, p=model[clicks][primary, secondary_1])  # clicks on the shown product to visualize its page
+            click_slot_1 = np.random.binomial(n=1, p=model[clicks][
+                primary, secondary_1])  # clicks on the shown product to visualize its page
             if click_slot_1:
                 seen_primary[secondary_1] = True
                 round_recursive(model, seen_primary, secondary_1, extracted_cr, clicks)
