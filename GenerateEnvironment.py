@@ -47,7 +47,8 @@ def generate_environment():
              "secondary_products": secondary_products,
              "real_P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
                        class_probability[2],
-             "lambda_secondary": 0.5
+             "lambda_secondary": 0.5,
+             "daily_user": 1000
              }
     return env1, model, class_probability
 
@@ -108,10 +109,20 @@ def clicks_data(data_):
     return result
 
 def show_results(instant_regret_rew, instant_regret_obs, title):
-    cumulative_regret_rew = np.cumsum(instant_regret_rew)
-    cumulative_regret_obs = np.cumsum(instant_regret_obs)
+    cumulative_regret_obs = np.zeros(len(instant_regret_obs[0]))
+    instant_regret_obs_new = [[] for _ in range(len(instant_regret_obs))]
 
-    plt.plot(cumulative_regret_rew, color='C1', label='Calculated')
+    for i in range(len(instant_regret_obs)):
+        instant_regret_obs_new[i] = np.cumsum(instant_regret_obs[i])
+
+    instant_regret_obs_new = np.array(instant_regret_obs_new)
+
+    for j in range(len(instant_regret_obs[0])):
+        cumulative_regret_obs[j] = np.mean(instant_regret_obs_new[:, j])
+    #cumulative_regret_rew = np.cumsum(instant_regret_rew)
+    #cumulative_regret_obs = np.cumsum(instant_regret_obs)
+
+    #plt.plot(cumulative_regret_rew, color='C1', label='Calculated')
     plt.plot(cumulative_regret_obs, color='C3', label='Observed')
     plt.title(title)
     plt.legend()

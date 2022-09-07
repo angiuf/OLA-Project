@@ -21,8 +21,7 @@ class UCBLearner2(Learner):
         self.model['ucb_cr'] = self.cr_means + self.conv_widths  # save conversion rates means + widths in the model
         self.model['alpha_means'] = self.alpha_means
         self.model['quantity_mean'] = self.quantity_mean
-        self.n_prod_price = np.zeros(
-            (self.n_prod, self.n_price))  # counts number of times a price has been selected for a product
+        self.n_prod_price = np.zeros((self.n_prod, self.n_price))  # counts number of times a price has been selected for a product
 
     def act(self):  # select the arm which has the highest upper confidence bound
         arm_pulled = optimization_algorithm(self.model, False, rates="ucb_cr", alphas="alpha_means", quantity="quantity_mean")
