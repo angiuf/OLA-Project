@@ -15,7 +15,7 @@ def generate_environment():
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5]])
-    prices = generate_prices(np.array([6, 2, 4, 3, 1.5]))
+    prices = generate_prices(np.array([8, 3, 5, 4, 2]))
     costs = np.array([1.6, 0.6, 1, 0.8, 0.4])
     class_probability = np.array([0.4, 0.2, 0.4])
     lambdas = np.array([1, 2, 3])
