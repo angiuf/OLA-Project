@@ -27,10 +27,12 @@ class UCBLearner3(Learner):
         for i in range(self.n_prod):
             if len(self.reward_per_prod_price[i][arm_pulled[i]]): # if empty = 0, else mean
                 self.cr_means[i, arm_pulled[i]] = np.mean(self.reward_per_prod_price[i][arm_pulled[i]])   # update the mean of conversion rate of the arm that we pulled
-            if len(self.reward_per_clicks[i][arm_pulled[i]]):  # if empty = 0, else mean
-                self.clicks_means[i,arm_pulled[i]] = np.mean(self.reward_per_clicks[i][arm_pulled[i]])
             self.n_prod_price[
                 i, arm_pulled[i]] += len(conv_data[i])  # TODO: += len(conv_data[i]) o t? con len(conv_data[i]) sembra meglio
+
+            for j in range(self.n_prod):
+                if len(self.reward_per_clicks[i][j]):  # if empty = 0, else mean
+                    self.clicks_means[i, j] = np.mean(self.reward_per_clicks[i][j])
 
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm

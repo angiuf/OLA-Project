@@ -29,14 +29,8 @@ class TSLearner3(Learner):
         for i in range(self.n_prod):
             self.alphas[i, arm_pulled[i]] += np.sum(conv_data[i])
             self.betas[i, arm_pulled[i]] += (len(conv_data[i]) - np.sum(conv_data[i]))
-
-        for i in range(self.n_prod):
-            data = np.array(clicks_data)
-            sum = np.sum(data[i, :])
             for j in range(self.n_prod):
-                if sum == 0:
-                    self.clicks_means[i, j] = 0.0
-                else:
-                    self.clicks_means[i, j] = data[i, j]/sum
+                if len(self.reward_per_clicks[i][j]):  # if empty = 0, else mean
+                    self.clicks_means[i, j] = np.mean(self.reward_per_clicks[i][j])
 
         self.model['clicks_means'] = self.clicks_means
