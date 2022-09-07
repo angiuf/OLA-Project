@@ -56,7 +56,7 @@ class EnvironmentPricing:
         number_objects = [0 for _ in range(5)]
         reward_per_object = [0 for _ in range(5)]
         bought_products = np.full(shape=5, fill_value=False)
-        clicks = np.zeros((5,5))
+        clicks = [[[]for _ in range(5)] for _ in range(5)]
 
         if current_product == -1:
             return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products, clicks]
@@ -86,20 +86,24 @@ class EnvironmentPricing:
                 click_first_secondary = np.random.binomial(n=1, p=self.P[
                     primary, secondary_1, extracted_class])  # clicks on the shown product to visualize its page
                 if click_first_secondary:
-                    clicks[primary][secondary_1] += 1
+                    clicks[primary][secondary_1].append(1)
                     seen_primary[secondary_1] = True
                     self.round_recursive(seen_primary, secondary_1, extracted_class, arms_pulled,
                                          number_objects, reward_per_object, bought_products, clicks)
+                else:
+                    clicks[primary][secondary_1].append(0)
 
             if not seen_primary[secondary_2]:
                 p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
                 click_second_secondary = np.random.binomial(n=1,
                                                           p=p_)  # clicks on the shown product to visualize its page
                 if click_second_secondary:
-                    clicks[primary][secondary_2] += 1
+                    clicks[primary][secondary_2].append(1/self.lambda_secondary)
                     seen_primary[secondary_2] = True
                     self.round_recursive(seen_primary, secondary_2, extracted_class, arms_pulled,
                                          number_objects, reward_per_object, bought_products, clicks)
+                else:
+                    clicks[primary][secondary_2].append(0)
 
         return
 

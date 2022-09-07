@@ -10,7 +10,8 @@ def main():
     prices = model["prices"]
 
     T = 100 - 4
-    daily_user = 2000
+    n_exp = 5
+    daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
@@ -22,60 +23,63 @@ def main():
     print("Optimal reward: ", optimal_reward)
 
     learner = TSLearner3(model)
-    instant_regret_rew = []
-    instant_regret_obs = []
+    instant_regret_rew = [[] for _ in range(n_exp)]
+    instant_regret_obs = [[] for _ in range(n_exp)]
 
-    for t in range(4):
-        arm = [t, t, t, t, t]
-        alpha_ratio = env1.alpha_ratio_otd()
-        data = env1.round_single_day(daily_user, alpha_ratio, arm, class_probability)
-        cr_data = conv_data(data)
-        cl_data = clicks_data(data)
-        learner.update(arm, cr_data, cl_data)
+    for i in range(n_exp):
+        print("Experiment number", i)
+        for t in range(4):
+            arm = [t, t, t, t, t]
+            alpha_ratio = env1.alpha_ratio_otd()
+            data = env1.round_single_day(daily_user, alpha_ratio, arm, class_probability)
+            cr_data = conv_data(data)
+            cl_data = clicks_data(data)
+            learner.update(arm, cr_data, cl_data)
 
-        act_rate = MC_simulation(model, real_conv_rates[range(5), arm], 5)
-        rew = return_reward(model, prices[range(5), arm], real_conv_rates[range(5), arm], act_rate,
-                            model['real_alpha_ratio'], model['real_quantity'])
+            act_rate = MC_simulation(model, real_conv_rates[range(5), arm], 5)
+            rew = return_reward(model, prices[range(5), arm], real_conv_rates[range(5), arm], act_rate,
+                                model['real_alpha_ratio'], model['real_quantity'])
 
-        obs_reward = 0
-        if len(data):
-            for i_ in range(len(data)):
-                obs_reward += np.sum(data[i_][0])
+            obs_reward = 0
+            if len(data):
+                for i_ in range(len(data)):
+                    obs_reward += np.sum(data[i_][0])
 
-            obs_reward /= len(data)
+                obs_reward /= len(data)
 
-        print("Pulled_arm: ", arm)
+            print("Pulled_arm: ", arm)
 
-        instant_regret_rew.append(optimal_reward - rew)
-        instant_regret_obs.append(optimal_reward - obs_reward)
-        print("Time: ", t)
+            instant_regret_rew[i].append(optimal_reward - rew)
+            instant_regret_obs[i].append(optimal_reward - obs_reward)
+            print("Time: ", t)
 
-    for t in range(T):
-        pulled_arm = learner.act()
-        alpha_ratio = env1.alpha_ratio_otd()
-        data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
-        cr_data = conv_data(data)
-        cl_data = clicks_data(data)
-        learner.update(pulled_arm, cr_data, cl_data)
+        for t in range(T):
+            pulled_arm = learner.act()
+            alpha_ratio = env1.alpha_ratio_otd()
+            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
+            cr_data = conv_data(data)
+            cl_data = clicks_data(data)
+            learner.update(pulled_arm, cr_data, cl_data)
 
-        act_rate = MC_simulation(model, real_conv_rates[range(5), pulled_arm], 5)
-        rew = return_reward(model, prices[range(5), pulled_arm], real_conv_rates[range(5), pulled_arm], act_rate,
-                            model['real_alpha_ratio'], model['real_quantity'])
+            act_rate = MC_simulation(model, real_conv_rates[range(5), pulled_arm], 5)
+            rew = return_reward(model, prices[range(5), pulled_arm], real_conv_rates[range(5), pulled_arm], act_rate,
+                                model['real_alpha_ratio'], model['real_quantity'])
 
-        obs_reward = 0
-        if len(data):
-            for i in range(len(data)):
-                obs_reward += np.sum(data[i][0])
+            obs_reward = 0
+            if len(data):
+                for i_ in range(len(data)):
+                    obs_reward += np.sum(data[i_][0])
 
-            obs_reward /= len(data)
+                obs_reward /= len(data)
 
-        print("Pulled_arm: ", pulled_arm)
+            print("Pulled_arm: ", pulled_arm)
 
-        instant_regret_rew.append(optimal_reward - rew)
-        instant_regret_obs.append(optimal_reward - obs_reward)
-        print("Time: ", t+4)
+            instant_regret_rew[i].append(optimal_reward - rew)
+            instant_regret_obs[i].append(optimal_reward - obs_reward)
+            print("Time: ", t+4)
+        learner.reset()
 
-    show_results(instant_regret_rew, instant_regret_obs, "TS test, , third case")
+    show_results(instant_regret_rew, instant_regret_obs, "TS test, third case")
 
 
 main()

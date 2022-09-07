@@ -99,12 +99,12 @@ def quantity_data(data_):
 
 # Function that returns the data needed to estimate the click graph
 def clicks_data(data_):
-    result = [[0 for _ in range(5)] for _ in range(5)]
+    result = [[[] for _ in range(5)] for _ in range(5)]
 
     for i in range(len(data_)):
         for j in range(5):
             for k in range(5):
-                result[j][k] += data_[i][6][j][k]
+                result[j][k].extend(data_[i][6][j][k])
 
     return result
 

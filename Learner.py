@@ -7,7 +7,7 @@ class Learner:
                                       range(self.n_prod)]  # list of list to collect rewards of each single arm (0, 1)
         self.reward_per_prod_alpha = [[] for _ in range(self.n_prod+1)]  # list of list to collect the first product seen by the users
         self.reward_per_quantity = [] # list to collect the number of objects bought by the users
-        self.reward_per_clicks = [[0 for _ in range(self.n_prod)] for _ in range(self.n_prod)]
+        self.reward_per_clicks = [[[] for _ in range(self.n_prod)] for _ in range(self.n_prod)]
 
         self.model_0 = model.copy() #TODO: si deve copiare?
         self.model = model
@@ -43,4 +43,4 @@ class Learner:
 
         for i in range(self.n_prod):
             for j in range(self.n_prod):
-                self.reward_per_clicks[i][j] += clicks_data[i][j]
+                self.reward_per_clicks[i][j].extend(clicks_data[i][j])

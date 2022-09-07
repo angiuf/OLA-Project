@@ -76,6 +76,8 @@ def main():
             instant_regret_rew[i].append(optimal_reward - rew)
             instant_regret_obs[i].append(optimal_reward - obs_reward)
             print("Time: ", t+4)
+        learner.printp()
+        print(model["real_P"])
         learner.reset()
 
     show_results(instant_regret_rew, instant_regret_obs, "UCB test, third case")
