@@ -19,7 +19,7 @@ from EnvironmentPricing import *
 # e.g. to find the optimal arm we use the real conversion rates, in ucb we use means + widths, if act_rates is true
 # use the already computed activation rates
 def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", alphas="real_alpha_ratio",
-                           quantity="real_quantity", clicks='real_P'):
+                           quantity="real_quantity", clicks='real_P', phase = -1):
     verbose_print = print if verbose else lambda *a, **k,: None
     n_prod = model["n_prod"]
     n_price = model["n_price"]
@@ -31,7 +31,11 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     price_arm = np.zeros(n_prod).astype('int')  # These are the indexes of the selected price arm
     rewards = np.zeros(n_prod)  # rewards of current arm  increased by one
     extracted_prices = price[range(n_prod), price_arm]
-    extracted_cr = model[rates][range(n_prod), price_arm]
+    #In a stationary environment there aren't any phases so the value is set to -1
+    if phase == -1:
+        extracted_cr = model[rates][range(n_prod), price_arm]
+    else:
+        extracted_cr = model[rates][phase, range(n_prod), price_arm]
     extracted_alpha = model[alphas]
     extracted_quantity = model[quantity]
 
@@ -49,7 +53,10 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
             else:
                 add_price = np.zeros(n_prod).astype('int')
                 add_price[i] = 1
-                extracted_cr = model[rates][range(n_prod), price_arm + add_price]  ## MISSING IN THE MAIN
+                if phase == -1:
+                    extracted_cr = model[rates][range(n_prod), price_arm + add_price]
+                else:
+                    extracted_cr = model[rates][phase, range(n_prod), price_arm + add_price]
                 extracted_prices = price[range(n_prod), price_arm + add_price]
 
                 act_rate = MC_simulation(model, extracted_cr, n_prod, K, clicks)

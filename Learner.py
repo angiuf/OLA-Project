@@ -1,5 +1,8 @@
 class Learner:
     def __init__(self, model):
+        self.head = None
+        self.window_size = None
+        self.reward_per_prod_price_sw = None
         self.t = 0  # time
         self.n_price = model["n_price"]  # number of prices per product
         self.n_prod = model["n_prod"]  # number of products
@@ -44,3 +47,30 @@ class Learner:
         for i in range(self.n_prod):
             for j in range(self.n_prod):
                 self.reward_per_clicks[i][j].extend(clicks_data[i][j])
+
+    def update4(self, arm_pulled, conv_data):
+        self.t += 1
+        if self.t < self.window_size:
+            for i in range(self.n_prod):
+                self.reward_per_prod_price_sw[self.t][i][arm_pulled[i]].extend(conv_data[i])  # Append data for conversion rate for each prod, for each price
+        else:
+            #Clean the most old data
+            for i in range(self.n_prod):
+                for j in range(self.n_price):
+                    self.reward_per_prod_price_sw[self.head][i][j] = []
+
+            #Insert new data
+            for i in range(self.n_prod):
+                self.reward_per_prod_price_sw[self.head][i][arm_pulled[i]].extend(conv_data[i])  # Append data for conversion rate for each prod, for each price
+
+            #Check head value
+            if self.head < self.window_size - 1:
+                self.head += 1
+            else:
+                self.head = 0
+
+    def set_window_size(self, window_size):
+        self.window_size = window_size
+        self.reward_per_prod_price_sw = [[[[] for _ in range(self.n_price)] for _ in
+                                          range(self.n_prod)] for _ in range(window_size)]  # list of list to collect rewards of each single arm (0, 1) limit to a window size
+        self.head = 0

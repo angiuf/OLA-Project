@@ -1,15 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from EnvironmentPricing import EnvironmentPricing
-
-
-def generate_prices(product_prices):
-    prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.4, -0.2, 0.2, 0.4])
-    for i in range(len(product_prices)):
-        prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
-            i] * changing
-    return prices
+from GenerateEnvironment import *
 
 
 def main():

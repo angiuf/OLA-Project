@@ -1,5 +1,6 @@
 import numpy as np
 from EnvironmentPricing import *
+from NonStationaryEnvironment import *
 import matplotlib.pyplot as plt
 
 
@@ -51,6 +52,61 @@ def generate_environment():
              "daily_user": 1000
              }
     return env1, model, class_probability
+
+def generate_environment_non_stat():
+    average = np.array([[[7, 9, 10], [2, 3, 3], [4, 4, 5], [3, 3, 3.5], [1.5, 2, 2]],
+                       [[4, 5, 6], [0, 1, 2], [1, 1, 2], [0, 2, 2.5], [0, 0.5, 0.5]],
+                       [[10, 11, 12], [5, 6, 7], [7, 8, 9], [6, 7, 8], [5, 6, 7]]])
+
+    variance = np.array([[[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
+                        [[2, 2, 2], [0.5, 1.5, 1.5], [0.5, 0.5, 0.5], [2.5, 2.5, 2.5], [0.5, 1.5, 1.5]],
+                        [[3, 3, 3], [0.5, 1.5, 2.5], [2.5, 3.5, 4.5], [1.5, 2.5, 3.5], [0.5, 1.5, 2.5]]])
+
+    prices = generate_prices(np.array([8, 3, 5, 4, 2]))
+
+    costs = np.array([0.8, 0.3, 0.5, 0.4, 0.2])
+
+    class_probability = np.array([0.5, 0.3, 0.2])
+
+    lambdas = np.array([1, 2, 3])
+
+    alphas_par = np.array([5, 1, 1, 1, 1, 1])
+
+    np.random.seed(5)
+    P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
+
+    secondary_products = np.array([[1, 4],
+                                   [0, 2],
+                                   [3, 0],
+                                   [2, 4],
+                                   [0, 1]])
+    horizon = 99
+
+    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary=0.5, horizon=horizon)
+
+    real_conv_rates = np.zeros((3, 5, 4))
+
+    for i in range(3):
+        for j in range(3):
+            real_conv_rates[i] += env2.get_real_conversion_rates(j, i) * class_probability[i]
+
+    model = {"n_prod": 5,
+             "n_price": 4,
+             "n_phase": average.shape[0],
+             "prices": prices,
+             "cost": costs,
+             "real_alphas": alphas_par,
+             "real_alpha_ratio": alphas_par / np.sum(alphas_par),
+             "real_conversion_rates": real_conv_rates,
+             "real_quantity": 3,
+             "secondary_products": secondary_products,
+             "real_P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
+                       class_probability[2],
+             "lambda_secondary": 0.5,
+             "daily_user": 1000
+             }
+    return env2, model, class_probability, horizon
+
 
 
 def generate_prices(product_prices):
