@@ -12,7 +12,7 @@ def main():
     phase_size = T/model["n_phase"]
 
     n_exp = 1
-    daily_user = 50
+    daily_user = 1000
 
     optimal_arm = np.zeros((model["n_phase"], model["n_prod"])).astype(int)
     optimal_reward = np.zeros(model["n_phase"])
@@ -28,7 +28,7 @@ def main():
     print("Optimal reward: ", optimal_reward)
     print("Optimal_arm: ", optimal_arm)
 
-    learner = UCBLearner4(model, 33)
+    learner = UCBLearner4(model, 10)
     instant_regret_rew = [[] for _ in range(n_exp)]
     instant_regret_obs = [[] for _ in range(n_exp)]
 
@@ -37,7 +37,6 @@ def main():
 
         for t in range(T):
             phase = int((t)/phase_size)
-            print("Phase: ", phase)
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
@@ -55,9 +54,10 @@ def main():
 
             instant_regret_obs[i].append(optimal_reward[phase] - obs_reward)
             print("Time: ", t)
+
         learner.reset()
+        env1.t = 0
 
     show_results(instant_regret_rew, instant_regret_obs, "UCB test, fourth case")
-
 
 main()

@@ -59,8 +59,8 @@ def generate_environment_non_stat():
                        [[10, 11, 12], [5, 6, 7], [7, 8, 9], [6, 7, 8], [5, 6, 7]]])
 
     variance = np.array([[[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-                        [[2, 2, 2], [0.5, 1.5, 1.5], [0.5, 0.5, 0.5], [2.5, 2.5, 2.5], [0.5, 1.5, 1.5]],
-                        [[3, 3, 3], [0.5, 1.5, 2.5], [2.5, 3.5, 4.5], [1.5, 2.5, 3.5], [0.5, 1.5, 2.5]]])
+                        [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
+                        [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]])
 
     prices = generate_prices(np.array([8, 3, 5, 4, 2]))
 
@@ -88,7 +88,7 @@ def generate_environment_non_stat():
 
     for i in range(3):
         for j in range(3):
-            real_conv_rates[i] += env2.get_real_conversion_rates(j, i) * class_probability[i]
+            real_conv_rates[i] += env2.get_real_conversion_rates(j, i) * class_probability[j]
 
     model = {"n_prod": 5,
              "n_price": 4,

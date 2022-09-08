@@ -24,16 +24,24 @@ class UCBLearner4(Learner):
     def update(self, arm_pulled, conv_data):
         super().update4(arm_pulled, conv_data)
 
-        #Extract the useful data
-        current_data = [[] for _ in range(self.n_prod)]
-        for i in range(self.window_size):
-            for j in range(self.n_prod):
-                current_data[j].extend(self.reward_per_prod_price_sw[i][j][arm_pulled[j]])
+        current_data = [[[] for _ in range(self.n_price)] for _ in range(self.n_prod)]
+        current_n = [[0 for _ in range(self.n_price)] for _ in range(self.n_prod)]
+
+        for k in range(self.window_size):
+            for i in range(self.n_prod):
+                for j in range(self.n_price):
+                    current_data[i][j].extend(self.reward_per_prod_price_sw[k][i][j])
+                    current_n[i][j] += self.n_per_prod_price_sw[k][i][j]
 
         for i in range(self.n_prod):
-            if len(current_data[i]): # if empty = 0, else mean
-                self.cr_means[i, arm_pulled[i]] = np.mean(current_data[i])   # update the mean of conversion rate of the arm that we pulled
-            self.n_prod_price[i, arm_pulled[i]] += len(conv_data[i])
+            for j in range(self.n_price):
+                if len(current_data[i][j]):# if empty = 0, else mean
+                    self.cr_means[i, j] = np.mean(current_data[i][j])
+                    self.n_prod_price[i, j] = current_n[i][j]
+                else:
+                    self.cr_means[i, j] = 0
+                    self.n_prod_price[i, j] = 0
+                # update the mean of conversion rate of the arm that we pulled
 
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm

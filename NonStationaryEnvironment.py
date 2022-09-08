@@ -102,5 +102,4 @@ class NonStationaryEnvironment(EnvironmentPricing):
             for j in range(0, 4):
                 conv_rate[i, j] = 1 - norm.cdf(self.prices[i, j], self.mean[phase, i, class_],
                                                np.sqrt(self.variance[phase, i, class_]))
-
         return conv_rate

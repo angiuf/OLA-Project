@@ -26,7 +26,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     price = model["prices"]
     K = 200  # number of seeds for MC simulation
     if rates == "real_conversion_rates":
-        K = 10000
+        K = 1000
 
     price_arm = np.zeros(n_prod).astype('int')  # These are the indexes of the selected price arm
     rewards = np.zeros(n_prod)  # rewards of current arm  increased by one
