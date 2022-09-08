@@ -46,3 +46,6 @@ class UCBLearner4(Learner):
 
         self.model['ucb_cr'] = self.cr_means + self.conv_widths
         self.model['cr_means'] = self.cr_means
+
+    def reset(self):
+        self.__init__(self.model_0, self.window_size)
