@@ -11,16 +11,16 @@ def main():
     prices = model["prices"]
     phase_size = T/model["n_phase"]
 
-    n_exp = 1
-    daily_user = 1000
+    n_exp = 10
+    daily_user = 500
 
     optimal_arm = np.zeros((model["n_phase"], model["n_prod"])).astype(int)
     optimal_reward = np.zeros(model["n_phase"])
 
     for i in range(model["n_phase"]):
-        optimal_arm[i] = optimization_algorithm(model, False, phase = i)  # pull the optimal arm
+        optimal_arm[i] = optimization_algorithm(model, False, phase=i)  # pull the optimal arm
 
-        optimal_act_rate = MC_simulation(model, real_conv_rates[i, range(5), optimal_arm[i]], 5, 10000)
+        optimal_act_rate = MC_simulation(model, real_conv_rates[i, range(5), optimal_arm[i]], 5, 1000)
 
         optimal_reward[i] = return_reward(model, prices[range(5), optimal_arm[i]],
                                        real_conv_rates[i, range(5), optimal_arm[i]], optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
@@ -36,7 +36,7 @@ def main():
         print("Experiment number", i)
 
         for t in range(T):
-            phase = int((t)/phase_size)
+            phase = int(t/phase_size)
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)

@@ -4,7 +4,6 @@ from NonStationaryEnvironment import *
 import matplotlib.pyplot as plt
 
 
-
 def generate_environment():
     average = np.array([[9, 10, 7],
                         [3, 3, 2],
@@ -21,7 +20,7 @@ def generate_environment():
     class_probability = np.array([0.4, 0.2, 0.4])
     lambdas = np.array([1, 2, 3])
     alphas_par = np.array([5, 1, 1, 1, 1, 1])
-    np.random.seed(7)
+    np.random.seed(6)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
     secondary_products = np.array([[1, 4],
                                    [0, 2],
@@ -53,16 +52,17 @@ def generate_environment():
              }
     return env1, model, class_probability
 
+
 def generate_environment_non_stat():
-    average = np.array([[[7, 9, 10], [2, 3, 3], [4, 4, 5], [3, 3, 3.5], [1.5, 2, 2]],
-                       [[4, 5, 6], [0, 1, 2], [1, 1, 2], [0, 2, 2.5], [0, 0.5, 0.5]],
-                       [[10, 11, 12], [5, 6, 7], [7, 8, 9], [6, 7, 8], [5, 6, 7]]])
+    average = np.array([[[7, 9, 10], [4, 4, 3.5], [4, 4, 5], [4, 3.5, 5], [1.5, 2, 2]],
+                        [[6, 8, 9], [1.5, 2, 2], [3, 3, 4], [2, 2.5, 2.5], [1, 1.5, 1]],
+                        [[8, 11, 11.5], [2, 3, 3], [5, 5.5, 6.5], [3, 3, 3.5], [2, 2, 2]]])
 
     variance = np.array([[[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-                        [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-                        [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]])
+                         [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
+                         [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]])
 
-    prices = generate_prices(np.array([8, 3, 5, 4, 2]))
+    prices = generate_prices(np.array([7, 2, 4, 3, 1]))
 
     costs = np.array([0.8, 0.3, 0.5, 0.4, 0.2])
 
@@ -82,7 +82,8 @@ def generate_environment_non_stat():
                                    [0, 1]])
     horizon = 99
 
-    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary=0.5, horizon=horizon)
+    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                                    lambda_secondary=0.5, horizon=horizon)
 
     real_conv_rates = np.zeros((3, 5, 4))
 
@@ -106,7 +107,6 @@ def generate_environment_non_stat():
              "daily_user": 1000
              }
     return env2, model, class_probability, horizon
-
 
 
 def generate_prices(product_prices):
@@ -164,8 +164,10 @@ def clicks_data(data_):
 
     return result
 
+
 def show_results(instant_regret_rew, instant_regret_obs, title):
     cumulative_regret_obs = np.zeros(len(instant_regret_obs[0]))
+    cumulative_regret_obs_std = np.zeros(len(instant_regret_obs[0]))
     instant_regret_obs_new = [[] for _ in range(len(instant_regret_obs))]
 
     for i in range(len(instant_regret_obs)):
@@ -175,12 +177,15 @@ def show_results(instant_regret_rew, instant_regret_obs, title):
 
     for j in range(len(instant_regret_obs[0])):
         cumulative_regret_obs[j] = np.mean(instant_regret_obs_new[:, j])
-    #cumulative_regret_rew = np.cumsum(instant_regret_rew)
-    #cumulative_regret_obs = np.cumsum(instant_regret_obs)
+        cumulative_regret_obs_std[j] = np.std(instant_regret_obs_new[:, j])/np.sqrt(len(instant_regret_obs_new[:, j]))
 
-    #plt.plot(cumulative_regret_rew, color='C1', label='Calculated')
+    # cumulative_regret_rew = np.cumsum(instant_regret_rew)
+    # cumulative_regret_obs = np.cumsum(instant_regret_obs)
+
+    # plt.plot(cumulative_regret_rew, color='C1', label='Calculated')
     plt.plot(cumulative_regret_obs, color='C3', label='Observed')
+    plt.fill_between(range(len(cumulative_regret_obs)), cumulative_regret_obs - cumulative_regret_obs_std,
+                     cumulative_regret_obs + cumulative_regret_obs_std, alpha=0.2)
     plt.title(title)
     plt.legend()
     plt.show()
-

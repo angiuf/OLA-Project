@@ -24,7 +24,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     n_prod = model["n_prod"]
     n_price = model["n_price"]
     price = model["prices"]
-    K = 200  # number of seeds for MC simulation
+    K = 100  # number of seeds for MC simulation
     if rates == "real_conversion_rates":
         K = 1000
 
@@ -92,7 +92,7 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alp
     return reward
 
 
-def MC_simulation(model, extracted_cr, n_products, K=500, clicks='real_P'):
+def MC_simulation(model, extracted_cr, n_products, K=100, clicks='real_P'):
     act_rates = np.zeros((n_products, n_products))
     # K = number of simulation for each seeds
 
