@@ -44,7 +44,7 @@ def main():
         reward = 0
         for i in range(len(data)):
             for j in range(5):
-                reward += data[i][0][j] * data[i][1][j]
+                reward += data[i][0][j]
         tot_reward.append(reward)
 
     x = np.linspace(0, horizon, num = horizon)

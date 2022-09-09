@@ -1,7 +1,4 @@
-from UCBLearner4 import *
-import numpy as np
-import matplotlib.pyplot as plt
-import math
+from UCBLearner5 import *
 from GenerateEnvironment import *
 
 
@@ -28,7 +25,7 @@ def main():
     print("Optimal reward: ", optimal_reward)
     print("Optimal_arm: ", optimal_arm)
 
-    learner = UCBLearner4(model, 10)
+    learner = UCBLearner5(model)
     instant_regret_rew = [[] for _ in range(n_exp)]
     instant_regret_obs = [[] for _ in range(n_exp)]
 
@@ -41,7 +38,8 @@ def main():
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
             env_data = conv_data(data)
-            learner.update(pulled_arm, env_data)
+            rewards = reward_per_prod(data)
+            learner.update(pulled_arm, env_data, rewards)
 
             obs_reward = 0
             if len(data):
@@ -57,7 +55,7 @@ def main():
 
         learner.reset()
         env1.t = 0
-
-    show_results(instant_regret_rew, instant_regret_obs, "UCB test, fourth case")
+    learner.print_det()
+    show_results(instant_regret_rew, instant_regret_obs, "UCB test, fifth case")
 
 main()

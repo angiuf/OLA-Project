@@ -189,3 +189,12 @@ def show_results(instant_regret_rew, instant_regret_obs, title):
     plt.title(title)
     plt.legend()
     plt.show()
+
+
+def reward_per_prod(data):
+    result = [0 for _ in range(5)]
+    for i in range(len(data)):
+        for j in range(5):
+            result[j] += data[i][0][j]
+
+    return result

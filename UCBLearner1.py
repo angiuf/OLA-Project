@@ -30,9 +30,11 @@ class UCBLearner1(Learner):
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm
                 n = self.n_prod_price[i, j]
+                N = np.sum(self.n_prod_price[i,:])
                 if n > 0:
                     self.conv_widths[i, j] = np.sqrt(
-                        2 * np.log(self.t * self.model['daily_user']) / n)  # TODO: log(t) o log(t) * daily_users?
+                        2 * np.log(self.t) / n)  # TODO: log(t) o log(t) * daily_users?
+                        #2 * np.log(N) / n)
                 else:
                     self.conv_widths[i, j] = np.inf
 

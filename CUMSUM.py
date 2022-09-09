@@ -11,7 +11,7 @@ class CUMSUM:
         self.g_plus = 0
         self.g_minus = 0
 
-    def update(self, sample: float) -> bool:
+    def update(self, sample: float):
         """
         takes a id sample and return True if a detection was flagged
         """
