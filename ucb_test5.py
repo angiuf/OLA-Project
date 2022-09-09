@@ -53,9 +53,10 @@ def main():
             instant_regret_obs[i].append(optimal_reward[phase] - obs_reward)
             print("Time: ", t)
 
+        learner.print_det()
         learner.reset()
         env1.t = 0
-    learner.print_det()
+
     show_results(instant_regret_rew, instant_regret_obs, "UCB test, fifth case")
 
 main()

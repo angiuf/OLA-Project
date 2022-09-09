@@ -197,4 +197,6 @@ def reward_per_prod(data):
         for j in range(5):
             result[j] += data[i][0][j]
 
+    result = [x / len(data) for x in result]
+
     return result

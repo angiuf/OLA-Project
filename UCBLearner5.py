@@ -5,12 +5,13 @@ from CUMSUM import *
 
 
 class UCBLearner5(Learner):
-    def __init__(self, model, alpha=0.05, M=10, eps=0.05, h=0.1):
+    def __init__(self, model, alpha=0.05, M=10, eps=0.05, h=[82000, 32600, 44500, 4000, 120]):
         super().__init__(model)
-        self.change_detection = [CUMSUM(M, eps, h) for _ in range(self.n_prod)]
+        self.change_detection = [[CUMSUM(M, eps, h[i]) for _ in range(self.n_price)] for i in range(self.n_prod)]
         self.valid_rewards_per_arm = [[[] for _ in range(self.n_price)] for _ in range(self.n_prod)]
         self.alpha = alpha
         self.detections = []
+        self.products_detected = []
 
         self.cr_means = np.zeros((self.n_prod, self.n_price))  # means of the conversion rate for each product at each price
         self.conv_widths = np.array([[np.inf for _ in range(self.n_price)] for _ in range(self.n_prod)])  # width for each product and each price, initialized at +inf to explore all arms first
@@ -31,12 +32,12 @@ class UCBLearner5(Learner):
     # rewards: list of lists of rewards per products
     def update(self, arm_pulled, conv_data, rewards):
         for i in range(self.n_prod):
-            if self.change_detection[i].update(rewards[i]):
+            if self.change_detection[i][arm_pulled[i]].update(rewards[i]):
                 self.detections.append(self.t)
-                for j in range(self.n_price):
-                    self.reward_per_prod_price[i][j] = []
-                    self.n_prod_price[i][j] = 0
-                self.change_detection[i].reset()
+                self.products_detected.append(i)
+                self.reward_per_prod_price[i][arm_pulled[i]] = []
+                self.n_prod_price[i][arm_pulled[i]] = 0
+                self.change_detection[i][arm_pulled[i]].reset()
 
         super().update(arm_pulled, conv_data)
 
@@ -62,3 +63,4 @@ class UCBLearner5(Learner):
 
     def print_det(self):
         print(self.detections)
+        print(self.products_detected)
