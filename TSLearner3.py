@@ -10,9 +10,8 @@ class TSLearner3(Learner):
         self.betas = np.ones((self.n_prod, self.n_price))  # betas of the TS
         self.prices = model["prices"]  # prices
 
-        self.clicks_means = np.zeros((5,5))  # means of the alpha ratio for each product
+        self.clicks_means = np.zeros((5, 5))  # means of the alpha ratio for each product
         self.model['clicks_means'] = self.clicks_means
-
 
     # Returns the chosen arm
     def act(self):
