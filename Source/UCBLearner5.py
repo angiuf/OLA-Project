@@ -65,9 +65,9 @@ class UCBLearner5(Learner):
         print(self.products_detected)
 
     def print(self):
-        M = np.zeros((self.n_prod, self.n_price))
+        matrix = np.zeros((self.n_prod, self.n_price))
         for i in range(self.n_prod):
             for j in range(self.n_price):
-                M[i, j] = self.change_detection[i][j].g_minus
+                matrix[i, j] = self.change_detection[i][j].g_minus
 
-        print(M)
+        print(matrix)
