@@ -8,8 +8,8 @@ def main():
     prices = model["prices"]
     phase_size = T / model["n_phase"]
 
-    n_exp = 1
-    daily_user = 10
+    n_exp = 20
+    daily_user = 500
 
     optimal_arm = np.zeros((model["n_phase"], model["n_prod"])).astype(int)
     optimal_reward = np.zeros(model["n_phase"])
@@ -38,8 +38,8 @@ def main():
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
             env_data = conv_data(data)
-            rewards = reward_per_prod(data)
-            learner.update(pulled_arm, env_data, rewards)
+            rewards, n_rewards = reward_per_prod(data)
+            learner.update(pulled_arm, env_data, rewards, n_rewards)
 
             obs_reward = 0
             if len(data):
@@ -48,7 +48,7 @@ def main():
 
                 obs_reward /= len(data)
 
-            #print("Pulled_arm: ", pulled_arm)
+            print("Pulled_arm: ", pulled_arm)
 
             instant_regret_obs[i].append(optimal_reward[phase] - obs_reward)
             print("Time: ", t)

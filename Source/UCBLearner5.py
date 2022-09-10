@@ -5,7 +5,7 @@ from Source.CUMSUM import *
 
 
 class UCBLearner5(Learner):
-    def __init__(self, model, alpha=0.05, M=10, eps=0.05, h=[5, 5, 5, 5, 5]):
+    def __init__(self, model, alpha=0.01, M=500, eps=0.001, h=[2, 2, 2, 2, 2]):
         super().__init__(model)
         self.change_detection = [[CUMSUM(M, eps, h[i]) for _ in range(self.n_price)] for i in range(self.n_prod)]
         self.valid_rewards_per_arm = [[[] for _ in range(self.n_price)] for _ in range(self.n_prod)]
@@ -31,9 +31,9 @@ class UCBLearner5(Learner):
             return arm_pulled
 
     # rewards: list of lists of rewards per products
-    def update(self, arm_pulled, conv_data, rewards):
+    def update(self, arm_pulled, conv_data, rewards, n_rewards):
         for i in range(self.n_prod):
-            if self.change_detection[i][arm_pulled[i]].update(rewards[i]):
+            if self.change_detection[i][arm_pulled[i]].update(rewards[i], n_rewards[i]):
                 self.detections.append(self.t)
                 self.products_detected.append(i)
                 self.reward_per_prod_price[i][arm_pulled[i]] = []
@@ -51,9 +51,9 @@ class UCBLearner5(Learner):
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm
                 n = self.n_prod_price[i, j]
-                # N = np.sum(self.n_prod_price[i, :])
+                N = np.sum(self.n_prod_price[i, :])
                 if n > 0:
-                    self.conv_widths[i, j] = np.sqrt(2 * np.log(self.t) / n)
+                    self.conv_widths[i, j] = np.sqrt(2 * np.log(N) / n)
                 else:
                     self.conv_widths[i, j] = np.inf
 

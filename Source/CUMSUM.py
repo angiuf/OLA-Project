@@ -11,21 +11,21 @@ class CUMSUM:
         self.g_plus = 0
         self.g_minus = 0
 
-    def update(self, sample: float):
+    def update(self, sample, n_sample):
         """
         takes a id sample and return True if a detection was flagged
         """
-        self.t += 1
+        self.t += n_sample
+        if self.t > 0:
+            self.reference = (self.reference * (self.t - n_sample) + sample * n_sample) / self.t
+
         if self.t <= self.M:
-            self.reference += sample / self.M
             return False
         else:
-            self.reference = (self.reference * (self.t - 1) + sample) / self.t
             s_plus = (sample - self.reference) - self.eps
             s_minus = -(sample - self.reference) - self.eps
             self.g_plus = max(0, self.g_plus + s_plus)
             self.g_minus = max(0, self.g_minus + s_minus)
-            print(self.g_minus)
             return self.g_plus > self.h or self.g_minus > self.h
 
     def reset(self):

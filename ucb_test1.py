@@ -7,7 +7,7 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 120
+    T = 60
     n_exp = 20
     daily_user = 500
 

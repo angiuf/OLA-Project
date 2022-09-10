@@ -78,7 +78,7 @@ def generate_environment_non_stat():
                                    [3, 0],
                                    [2, 4],
                                    [0, 1]])
-    horizon = 99
+    horizon = 199
 
     env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                                     lambda_secondary=0.5, horizon=horizon)
@@ -178,6 +178,9 @@ def show_results(instant_regret_obs, title=""):
         cumulative_regret_obs[j] = np.mean(instant_regret_obs_new[:, j])
         cumulative_regret_obs_std[j] = np.std(instant_regret_obs_new[:, j]) / np.sqrt(len(instant_regret_obs_new[:, j]))
 
+    for i in range(len(instant_regret_obs_new[:, 0])):
+        plt.plot(instant_regret_obs_new[i, :], color='C3', alpha=0.1)
+
     plt.plot(cumulative_regret_obs, color='C3', label='Observed')
     plt.fill_between(range(len(cumulative_regret_obs)), cumulative_regret_obs - cumulative_regret_obs_std,
                      cumulative_regret_obs + cumulative_regret_obs_std, alpha=0.2)
@@ -188,10 +191,14 @@ def show_results(instant_regret_obs, title=""):
 
 def reward_per_prod(data):
     result = [0 for _ in range(5)]
+    number = [0 for _ in range(5)]
     for i in range(len(data)):
         for j in range(5):
             result[j] += data[i][0][j]
+            number[j] += data[i][1][j]
 
-    result = [x / len(data) for x in result]
+    for j in range(5):
+        if number[j] > 0:
+            result[j] /= len(data)
 
-    return result
+    return result, number
