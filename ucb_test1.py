@@ -1,4 +1,4 @@
-from UCBLearner2 import *
+from UCBLearner1 import *
 from Auxiliary import *
 
 
@@ -20,7 +20,7 @@ def main():
                                    optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
     print("Optimal reward: ", optimal_reward)
 
-    learner = UCBLearner2(model)
+    learner = UCBLearner1(model)
     instant_regret_obs = [[] for _ in range(n_exp)]
 
     for i in range(n_exp):
@@ -30,10 +30,8 @@ def main():
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
-            cr_data = conv_data(data)
-            ar_data = alpha_data(data)
-            q_data = quantity_data(data)
-            learner.update(pulled_arm, cr_data, ar_data, q_data)
+            env_data = conv_data(data)
+            learner.update(pulled_arm, env_data)
 
             obs_reward = 0
             if len(data):
@@ -48,7 +46,7 @@ def main():
             print("Time: ", t)
         learner.reset()
 
-    show_results(instant_regret_obs, "UCB test, second case")
+    show_results(instant_regret_obs, "UCB test, first case")
 
 
 main()

@@ -13,13 +13,14 @@ class UCBLearner5(Learner):
         self.detections = []
         self.products_detected = []
 
-        self.cr_means = np.zeros((self.n_prod, self.n_price))  # means of the conversion rate for each product at each price
-        self.conv_widths = np.array([[np.inf for _ in range(self.n_price)] for _ in range(self.n_prod)])  # width for each product and each price, initialized at +inf to explore all arms first
+        # means of the conversion rate for each product at each price
+        self.cr_means = np.zeros((self.n_prod, self.n_price))
+        # width for each product and each price, initialized at +inf to explore all arms first
+        self.conv_widths = np.array([[np.inf for _ in range(self.n_price)] for _ in range(self.n_prod)])
         self.prices = model["prices"]
         self.model['cr_means'] = self.cr_means  # save conversion rates means in the model
         self.model['ucb_cr'] = self.cr_means + self.conv_widths  # save conversion rates means + widths in the model
-        self.n_prod_price = np.zeros((self.n_prod, self.n_price))  # counts number of times a price has been selected for a product
-
+        self.n_prod_price = np.zeros((self.n_prod, self.n_price))  # times a price has been selected for a product
 
     def act(self):
         if np.random.binomial(1, 1 - self.alpha):
@@ -53,7 +54,6 @@ class UCBLearner5(Learner):
                 N = np.sum(self.n_prod_price[i, :])
                 if n > 0:
                     self.conv_widths[i, j] = np.sqrt(
-                        #2 * np.log(self.t) / n)  # TODO: log(t) o log(t) * daily_users?
                         2 * np.log(N) / n)
                 else:
                     self.conv_widths[i, j] = np.inf
