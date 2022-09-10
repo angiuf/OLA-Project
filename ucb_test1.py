@@ -1,5 +1,5 @@
-from UCBLearner1 import *
-from Auxiliary import *
+from Source.UCBLearner1 import *
+from Source.Auxiliary import *
 
 
 def main():

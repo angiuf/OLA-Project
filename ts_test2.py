@@ -1,5 +1,5 @@
-from TSLearner2 import *
-from Auxiliary import *
+from Source.TSLearner2 import *
+from Source.Auxiliary import *
 
 
 def main():

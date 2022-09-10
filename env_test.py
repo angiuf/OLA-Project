@@ -1,4 +1,4 @@
-from Auxiliary import *
+from Source.Auxiliary import *
 
 
 def main():
