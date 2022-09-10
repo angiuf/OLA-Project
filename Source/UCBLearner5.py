@@ -5,7 +5,7 @@ from Source.CUMSUM import *
 
 
 class UCBLearner5(Learner):
-    def __init__(self, model, alpha=0.05, M=10, eps=0.05, h=[82000, 32600, 44500, 4000, 120]):
+    def __init__(self, model, alpha=0.05, M=10, eps=0.05, h=[5, 5, 5, 5, 5]):
         super().__init__(model)
         self.change_detection = [[CUMSUM(M, eps, h[i]) for _ in range(self.n_price)] for i in range(self.n_prod)]
         self.valid_rewards_per_arm = [[[] for _ in range(self.n_price)] for _ in range(self.n_prod)]
@@ -51,10 +51,9 @@ class UCBLearner5(Learner):
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm
                 n = self.n_prod_price[i, j]
-                N = np.sum(self.n_prod_price[i, :])
+                # N = np.sum(self.n_prod_price[i, :])
                 if n > 0:
-                    self.conv_widths[i, j] = np.sqrt(
-                        2 * np.log(N) / n)
+                    self.conv_widths[i, j] = np.sqrt(2 * np.log(self.t) / n)
                 else:
                     self.conv_widths[i, j] = np.inf
 

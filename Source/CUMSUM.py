@@ -20,11 +20,12 @@ class CUMSUM:
             self.reference += sample / self.M
             return False
         else:
-            self.reference += (self.reference * (self.t - 1) + sample) / self.t
+            self.reference = (self.reference * (self.t - 1) + sample) / self.t
             s_plus = (sample - self.reference) - self.eps
             s_minus = -(sample - self.reference) - self.eps
             self.g_plus = max(0, self.g_plus + s_plus)
             self.g_minus = max(0, self.g_minus + s_minus)
+            print(self.g_minus)
             return self.g_plus > self.h or self.g_minus > self.h
 
     def reset(self):
