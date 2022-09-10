@@ -19,7 +19,7 @@ from EnvironmentPricing import *
 # e.g. to find the optimal arm we use the real conversion rates, in ucb we use means + widths, if act_rates is true
 # use the already computed activation rates
 def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", alphas="real_alpha_ratio",
-                           quantity="real_quantity", clicks='real_P', phase = -1):
+                           quantity="real_quantity", clicks='real_P', phase=-1):
     verbose_print = print if verbose else lambda *a, **k,: None
     n_prod = model["n_prod"]
     n_price = model["n_price"]
@@ -31,7 +31,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     price_arm = np.zeros(n_prod).astype('int')  # These are the indexes of the selected price arm
     rewards = np.zeros(n_prod)  # rewards of current arm  increased by one
     extracted_prices = price[range(n_prod), price_arm]
-    #In a stationary environment there aren't any phases so the value is set to -1
+    # In a stationary environment there aren't any phases so the value is set to -1
     if phase == -1:
         extracted_cr = model[rates][range(n_prod), price_arm]
     else:
@@ -39,7 +39,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     extracted_alpha = model[alphas]
     extracted_quantity = model[quantity]
 
-    act_rate = MC_simulation(model, extracted_cr, n_prod, K, clicks)
+    act_rate = mc_simulation(model, extracted_cr, n_prod, K, clicks)
 
     initial_reward = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha, extracted_quantity)
     previous_reward = initial_reward
@@ -59,7 +59,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
                     extracted_cr = model[rates][phase, range(n_prod), price_arm + add_price]
                 extracted_prices = price[range(n_prod), price_arm + add_price]
 
-                act_rate = MC_simulation(model, extracted_cr, n_prod, K, clicks)
+                act_rate = mc_simulation(model, extracted_cr, n_prod, K, clicks)
 
                 rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha,
                                            extracted_quantity)
@@ -87,12 +87,12 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alp
     for i in range(n_prod):
         for j in range(n_prod):
             reward += extracted_alphas[i + 1] * act_prob[i, j] * np.min([extracted_cr[j], 1]) * (
-                        extracted_prices[j] - model["cost"][j]) * extracted_quantity
+                    extracted_prices[j] - model["cost"][j]) * extracted_quantity
 
     return reward
 
 
-def MC_simulation(model, extracted_cr, n_products, K=100, clicks='real_P'):
+def mc_simulation(model, extracted_cr, n_products, K=100, clicks='real_P'):
     act_rates = np.zeros((n_products, n_products))
     # K = number of simulation for each seeds
 

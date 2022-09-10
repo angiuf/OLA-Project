@@ -1,5 +1,3 @@
-import numpy as np
-from EnvironmentPricing import *
 from NonStationaryEnvironment import *
 import matplotlib.pyplot as plt
 
@@ -165,7 +163,8 @@ def clicks_data(data_):
     return result
 
 
-def show_results(instant_regret_rew, instant_regret_obs, title):
+# plots the regret with bands
+def show_results(instant_regret_obs, title=""):
     cumulative_regret_obs = np.zeros(len(instant_regret_obs[0]))
     cumulative_regret_obs_std = np.zeros(len(instant_regret_obs[0]))
     instant_regret_obs_new = [[] for _ in range(len(instant_regret_obs))]
@@ -177,12 +176,8 @@ def show_results(instant_regret_rew, instant_regret_obs, title):
 
     for j in range(len(instant_regret_obs[0])):
         cumulative_regret_obs[j] = np.mean(instant_regret_obs_new[:, j])
-        cumulative_regret_obs_std[j] = np.std(instant_regret_obs_new[:, j])/np.sqrt(len(instant_regret_obs_new[:, j]))
+        cumulative_regret_obs_std[j] = np.std(instant_regret_obs_new[:, j]) / np.sqrt(len(instant_regret_obs_new[:, j]))
 
-    # cumulative_regret_rew = np.cumsum(instant_regret_rew)
-    # cumulative_regret_obs = np.cumsum(instant_regret_obs)
-
-    # plt.plot(cumulative_regret_rew, color='C1', label='Calculated')
     plt.plot(cumulative_regret_obs, color='C3', label='Observed')
     plt.fill_between(range(len(cumulative_regret_obs)), cumulative_regret_obs - cumulative_regret_obs_std,
                      cumulative_regret_obs + cumulative_regret_obs_std, alpha=0.2)

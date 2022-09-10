@@ -1,7 +1,4 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from EnvironmentPricing import EnvironmentPricing
-from GenerateEnvironment import *
+from Auxiliary import *
 
 
 def main():
@@ -43,5 +40,6 @@ def main():
                                  class_probability=class_probability)
 
     print(data)
+
 
 main()

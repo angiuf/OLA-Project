@@ -1,17 +1,14 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from NonStationaryEnvironment import NonStationaryEnvironment
-from GenerateEnvironment import *
-
+from Auxiliary import *
+from tqdm import trange
 
 def main():
     average = np.array([[[7, 9, 10], [2, 3, 3], [4, 4, 5], [3, 3, 3.5], [1.5, 2, 2]],
-                       [[4, 5, 6], [0, 1, 2], [1, 1, 2], [0, 2, 2.5], [0, 0.5, 0.5]],
-                       [[10, 11, 12], [5, 6, 7], [7, 8, 9], [6, 7, 8], [5, 6, 7]]])
+                        [[4, 5, 6], [0, 1, 2], [1, 1, 2], [0, 2, 2.5], [0, 0.5, 0.5]],
+                        [[10, 11, 12], [5, 6, 7], [7, 8, 9], [6, 7, 8], [5, 6, 7]]])
 
     variance = np.array([[[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-                        [[2, 2, 2], [0.5, 1.5, 1.5], [0.5, 0.5, 0.5], [2.5, 2.5, 2.5], [0.5, 1.5, 1.5]],
-                        [[3, 3, 3], [0.5, 1.5, 2.5], [2.5, 3.5, 4.5], [1.5, 2.5, 3.5], [0.5, 1.5, 2.5]]])
+                         [[2, 2, 2], [0.5, 1.5, 1.5], [0.5, 0.5, 0.5], [2.5, 2.5, 2.5], [0.5, 1.5, 1.5]],
+                         [[3, 3, 3], [0.5, 1.5, 2.5], [2.5, 3.5, 4.5], [1.5, 2.5, 3.5], [0.5, 1.5, 2.5]]])
 
     prices = generate_prices(np.array([8, 3, 5, 4, 2]))
 
@@ -33,11 +30,11 @@ def main():
                                    [0, 1]])
     horizon = 99
 
-    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary=0.5, horizon=horizon)
+    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                                    lambda_secondary=0.5, horizon=horizon)
 
     tot_reward = []
-    for t in range(horizon):
-        print('Time: ', t)
+    for t in trange(horizon):
         alphas_ratio = env2.alpha_ratio_otd()
         data = env2.round_single_day(n_daily_users=100, alpha_ratio=alphas_ratio, arms_pulled=[0, 0, 0, 0, 0],
                                      class_probability=class_probability)
@@ -47,11 +44,11 @@ def main():
                 reward += data[i][0][j]
         tot_reward.append(reward)
 
-    x = np.linspace(0, horizon, num = horizon)
+    x = np.linspace(0, horizon, num=horizon)
     plt.plot(x, tot_reward)
     plt.fill_between(x, tot_reward, where=x < 33, facecolor='green', interpolate=True)
-    plt.fill_between(x, tot_reward, where= x >= 33, facecolor='red', interpolate=True)
-    plt.fill_between(x, tot_reward, where= x >= 66, facecolor='blue', interpolate=True)
+    plt.fill_between(x, tot_reward, where=x >= 33, facecolor='red', interpolate=True)
+    plt.fill_between(x, tot_reward, where=x >= 66, facecolor='blue', interpolate=True)
     plt.show()
 
 

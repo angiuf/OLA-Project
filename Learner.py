@@ -14,7 +14,7 @@ class Learner:
         self.reward_per_quantity = []  # list to collect the number of objects bought by the users
         self.reward_per_clicks = [[[] for _ in range(self.n_prod)] for _ in range(self.n_prod)]
 
-        self.model_0 = model.copy()  # TODO: si deve copiare? secondo me si(Enrico)
+        self.model_0 = model.copy()
         self.model = model
 
     # we need two functions: one that sends actions to the environment, the other that collects the obs and
@@ -58,7 +58,7 @@ class Learner:
         if self.t < self.window_size:
             for i in range(self.n_prod):
                 self.reward_per_prod_price_sw[self.t][i][arm_pulled[i]].extend(
-                    conv_data[i])# Append data for conversion rate for each prod, for each price
+                    conv_data[i])  # Append data for conversion rate for each prod, for each price
                 self.n_per_prod_price_sw[self.t][i][arm_pulled[i]] = len(conv_data[i])
         else:
             # Clean the most old data

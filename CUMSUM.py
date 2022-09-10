@@ -25,8 +25,6 @@ class CUMSUM:
             s_minus = -(sample - self.reference) - self.eps
             self.g_plus = max(0, self.g_plus + s_plus)
             self.g_minus = max(0, self.g_minus + s_minus)
-            print("These are the gs: ", self.g_plus, self.g_minus)
-            #print(self.g_plus > self.h or self.g_minus > self.h)
             return self.g_plus > self.h or self.g_minus > self.h
 
     def reset(self):

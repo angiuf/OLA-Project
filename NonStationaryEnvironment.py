@@ -4,8 +4,9 @@ from EnvironmentPricing import EnvironmentPricing
 
 
 class NonStationaryEnvironment(EnvironmentPricing):
-    #In this class mean and variance have size (n_phases, 5,3)
-    def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary, horizon):
+    # In this class mean and variance have size (n_phases, 5,3)
+    def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary,
+                 horizon):
         super().__init__(mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary)
         self.t = 0
         n_phases = self.mean.shape[2]
