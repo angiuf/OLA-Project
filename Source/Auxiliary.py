@@ -1,4 +1,4 @@
-from NonStationaryEnvironment import *
+from Source.NonStationaryEnvironment import *
 import matplotlib.pyplot as plt
 
 

@@ -1,5 +1,5 @@
-from Learner import Learner
-from GreedyAlgorithm import *
+from Source.Learner import Learner
+from Source.GreedyAlgorithm import *
 import numpy as np
 
 

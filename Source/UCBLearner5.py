@@ -1,7 +1,7 @@
-from Learner import Learner
-from GreedyAlgorithm import *
+from Source.Learner import Learner
+from Source.GreedyAlgorithm import *
 import numpy as np
-from CUMSUM import *
+from Source.CUMSUM import *
 
 
 class UCBLearner5(Learner):

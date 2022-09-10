@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import norm
-from EnvironmentPricing import EnvironmentPricing
+from Source.EnvironmentPricing import EnvironmentPricing
 
 
 class NonStationaryEnvironment(EnvironmentPricing):
