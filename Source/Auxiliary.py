@@ -182,8 +182,8 @@ def show_results(instant_regret_obs, title=""):
         plt.plot(instant_regret_obs_new[i, :], color='C3', alpha=0.1)
 
     plt.plot(cumulative_regret_obs, color='C3', label='Observed')
-    plt.fill_between(range(len(cumulative_regret_obs)), cumulative_regret_obs - cumulative_regret_obs_std,
-                     cumulative_regret_obs + cumulative_regret_obs_std, alpha=0.2)
+    plt.fill_between(range(len(cumulative_regret_obs)), cumulative_regret_obs - 2*cumulative_regret_obs_std,
+                     cumulative_regret_obs + 2*cumulative_regret_obs_std, alpha=0.2)
     plt.title(title)
     plt.legend()
     plt.show()
@@ -194,8 +194,8 @@ def reward_per_prod(data):
     number = [0 for _ in range(5)]
     for i in range(len(data)):
         for j in range(5):
-            result[j] += data[i][0][j]
-            number[j] += data[i][1][j]
+            result[j] += data[i][5][j]
+            number[j] += data[i][4][j]
 
     for j in range(5):
         if number[j] > 0:
