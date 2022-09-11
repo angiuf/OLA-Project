@@ -13,7 +13,7 @@ def generate_environment():
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5]])
-    prices = generate_prices(np.array([8, 3, 5, 4, 2]))
+    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
     costs = np.array([1.6, 0.6, 1, 0.8, 0.4])
     class_probability = np.array([0.4, 0.2, 0.4])
     lambdas = np.array([1, 2, 3])
@@ -60,7 +60,7 @@ def generate_environment_non_stat():
                          [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
                          [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]])
 
-    prices = generate_prices(np.array([7, 2, 4, 3, 1]))
+    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
 
     costs = np.array([0.8, 0.3, 0.5, 0.4, 0.2])
 
@@ -78,7 +78,7 @@ def generate_environment_non_stat():
                                    [3, 0],
                                    [2, 4],
                                    [0, 1]])
-    horizon = 199
+    horizon = 99
 
     env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                                     lambda_secondary=0.5, horizon=horizon)
@@ -109,7 +109,7 @@ def generate_environment_non_stat():
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.6, -0.2, 0.2, 0.6])
+    changing = np.array([-0.3, -0.1, 0.1, 0.3])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
@@ -190,15 +190,10 @@ def show_results(instant_regret_obs, title=""):
 
 
 def reward_per_prod(data):
-    result = [0 for _ in range(5)]
-    number = [0 for _ in range(5)]
+    result = [[] for _ in range(5)]
     for i in range(len(data)):
         for j in range(5):
-            result[j] += data[i][5][j]
-            number[j] += data[i][4][j]
+            if data[i][4][j]:
+                result[j].append(data[i][5][j])
 
-    for j in range(5):
-        if number[j] > 0:
-            result[j] /= len(data)
-
-    return result, number
+    return result

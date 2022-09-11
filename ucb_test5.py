@@ -1,6 +1,6 @@
 from Source.UCBLearner5 import *
 from Source.Auxiliary import *
-
+from tqdm import trange
 
 def main():
     env1, model, class_probability, T = generate_environment_non_stat()
@@ -8,7 +8,7 @@ def main():
     prices = model["prices"]
     phase_size = T / model["n_phase"]
 
-    n_exp = 10
+    n_exp = 1
     daily_user = 500
 
     optimal_arm = np.zeros((model["n_phase"], model["n_prod"])).astype(int)
@@ -30,7 +30,7 @@ def main():
     instant_regret_obs = [[] for _ in range(n_exp)]
 
     for i in range(n_exp):
-        print("Experiment number", i)
+        print("Experiment number", i+1)
 
         for t in range(T):
             phase = int(t / phase_size)
@@ -38,8 +38,8 @@ def main():
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
             env_data = conv_data(data)
-            rewards, n_rewards = reward_per_prod(data)
-            learner.update(pulled_arm, env_data, rewards, n_rewards)
+            rewards = reward_per_prod(data)
+            learner.update(pulled_arm, env_data, rewards)
 
             obs_reward = 0
             if len(data):

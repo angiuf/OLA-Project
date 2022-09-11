@@ -5,7 +5,7 @@ from Source.CUSUM import *
 
 
 class UCBLearner5(Learner):
-    def __init__(self, model, alpha=0.01, M=500, eps=0.01, h=[0.5, 0.5, 0.5, 0.5, 0.5]):
+    def __init__(self, model, alpha=0.01, M=500, eps=0.05, h=[20, 20, 20, 20, 20]):
         super().__init__(model)
         self.change_detection = [[CUSUM(M, eps, h[i]) for _ in range(self.n_price)] for i in range(self.n_prod)]
         self.valid_rewards_per_arm = [[[] for _ in range(self.n_price)] for _ in range(self.n_prod)]
@@ -31,11 +31,17 @@ class UCBLearner5(Learner):
             return arm_pulled
 
     # rewards: list of lists of rewards per products
-    def update(self, arm_pulled, conv_data, rewards, n_rewards):
+    def update(self, arm_pulled, conv_data, rewards):
         for i in range(self.n_prod):
-            if self.change_detection[i][arm_pulled[i]].update(rewards[i], n_rewards[i]):
+            if self.change_detection[i][arm_pulled[i]].update(rewards[i]):
                 self.detections.append(self.t)
                 self.products_detected.append(i)
+                #
+                # for j in range(self.n_price):
+                #     self.reward_per_prod_price[i][j] = []
+                #     self.n_prod_price[i][j] = 0
+                #     self.change_detection[i][j].reset()
+                #
                 self.reward_per_prod_price[i][arm_pulled[i]] = []
                 self.n_prod_price[i][arm_pulled[i]] = 0
                 self.change_detection[i][arm_pulled[i]].reset()

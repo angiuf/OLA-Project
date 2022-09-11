@@ -11,22 +11,26 @@ class CUSUM:
         self.g_plus = 0
         self.g_minus = 0
 
-    def update(self, sample, n_sample):
+    def update(self, sample):
         """
         takes a id sample and return True if a detection was flagged
         """
-        self.t += n_sample
-        if self.t > 0:
-            self.reference = (self.reference * (self.t - n_sample) + sample * n_sample) / self.t
+        for i in range(len(sample)):
 
-        if self.t <= self.M:
-            return False
-        else:
-            s_plus = (sample - self.reference) - self.eps
-            s_minus = -(sample - self.reference) - self.eps
-            self.g_plus = max(0, self.g_plus + s_plus)
-            self.g_minus = max(0, self.g_minus + s_minus)
-            return self.g_plus > self.h or self.g_minus > self.h
+            self.t += 1
+            if self.t <= self.M:
+                self.reference += sample[i]/self.M
+            else:
+                self.reference = (self.reference * (self.t - 1) + sample[i]) / self.t
+                s_plus = (sample[i] - self.reference) - self.eps
+                s_minus = -(sample[i] - self.reference) - self.eps
+                self.g_plus = max(0, self.g_plus + s_plus)
+                self.g_minus = max(0, self.g_minus + s_minus)
+                if self.g_plus > self.h or self.g_minus > self.h:
+                    return True
+
+        return False
+
 
     def reset(self):
         """
