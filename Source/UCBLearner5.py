@@ -1,13 +1,13 @@
 from Source.Learner import Learner
 from Source.GreedyAlgorithm import *
 import numpy as np
-from Source.CUMSUM import *
+from Source.CUSUM import *
 
 
 class UCBLearner5(Learner):
     def __init__(self, model, alpha=0.01, M=500, eps=0.01, h=[0.5, 0.5, 0.5, 0.5, 0.5]):
         super().__init__(model)
-        self.change_detection = [[CUMSUM(M, eps, h[i]) for _ in range(self.n_price)] for i in range(self.n_prod)]
+        self.change_detection = [[CUSUM(M, eps, h[i]) for _ in range(self.n_price)] for i in range(self.n_prod)]
         self.valid_rewards_per_arm = [[[] for _ in range(self.n_price)] for _ in range(self.n_prod)]
         self.alpha = alpha
         self.detections = []

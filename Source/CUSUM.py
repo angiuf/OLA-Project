@@ -1,4 +1,4 @@
-class CUMSUM:
+class CUSUM:
     def __init__(self, M, eps, h):
         """
         initialize the relevant variables
