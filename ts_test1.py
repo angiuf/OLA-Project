@@ -1,5 +1,6 @@
 from Source.TSLearner1 import *
 from Source.Auxiliary import *
+from tqdm import trange
 
 
 def main():
@@ -25,9 +26,9 @@ def main():
     instant_regret_obs = [[] for _ in range(n_exp)]
 
     for i in range(n_exp):
-        print("Experiment number", i)
+        print("Experiment number", i+1)
 
-        for t in range(T):
+        for t in trange(T):
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
@@ -41,10 +42,10 @@ def main():
 
                 obs_reward /= len(data)
 
-            print("Pulled_arm: ", pulled_arm)
+            #print("Pulled_arm: ", pulled_arm)
 
             instant_regret_obs[i].append(optimal_reward - obs_reward)
-            print("Time: ", t)
+            #print("Time: ", t)
         learner.reset()
 
     show_results(instant_regret_obs, "TS test, first case")

@@ -8,7 +8,7 @@ def main():
     prices = model["prices"]
     phase_size = T / model["n_phase"]
 
-    n_exp = 1
+    n_exp = 20
     daily_user = 500
 
     optimal_arm = np.zeros((model["n_phase"], model["n_prod"])).astype(int)
