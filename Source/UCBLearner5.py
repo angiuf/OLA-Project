@@ -36,15 +36,19 @@ class UCBLearner5(Learner):
             if self.change_detection[i][arm_pulled[i]].update(rewards[i]):
                 self.detections.append(self.t)
                 self.products_detected.append(i)
-                #
-                # for j in range(self.n_price):
-                #     self.reward_per_prod_price[i][j] = []
-                #     self.n_prod_price[i][j] = 0
-                #     self.change_detection[i][j].reset()
-                #
-                self.reward_per_prod_price[i][arm_pulled[i]] = []
-                self.n_prod_price[i][arm_pulled[i]] = 0
-                self.change_detection[i][arm_pulled[i]].reset()
+
+                # Use one of the following to reset
+
+                # reset all the arms of the product (seems better)
+                for j in range(self.n_price):
+                    self.reward_per_prod_price[i][j] = []
+                    self.n_prod_price[i][j] = 0
+                    self.change_detection[i][j].reset()
+
+                # reset only the chosen arms
+                # self.reward_per_prod_price[i][arm_pulled[i]] = []
+                # self.n_prod_price[i][arm_pulled[i]] = 0
+                # self.change_detection[i][arm_pulled[i]].reset()
 
         super().update(arm_pulled, conv_data)
 

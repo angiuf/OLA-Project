@@ -78,7 +78,7 @@ def generate_environment_non_stat():
                                    [3, 0],
                                    [2, 4],
                                    [0, 1]])
-    horizon = 99
+    horizon = 199
 
     env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                                     lambda_secondary=0.5, horizon=horizon)

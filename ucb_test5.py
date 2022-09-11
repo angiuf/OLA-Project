@@ -8,7 +8,7 @@ def main():
     prices = model["prices"]
     phase_size = T / model["n_phase"]
 
-    n_exp = 1
+    n_exp = 20
     daily_user = 500
 
     optimal_arm = np.zeros((model["n_phase"], model["n_prod"])).astype(int)
@@ -32,7 +32,7 @@ def main():
     for i in range(n_exp):
         print("Experiment number", i+1)
 
-        for t in range(T):
+        for t in trange(T):
             phase = int(t / phase_size)
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
@@ -48,10 +48,10 @@ def main():
 
                 obs_reward /= len(data)
 
-            print("Pulled_arm: ", pulled_arm)
+            #print("Pulled_arm: ", pulled_arm)
 
             instant_regret_obs[i].append(optimal_reward[phase] - obs_reward)
-            print("Time: ", t)
+            #print("Time: ", t)
 
         learner.print_det()
         learner.reset()
