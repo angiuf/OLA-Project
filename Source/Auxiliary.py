@@ -109,7 +109,7 @@ def generate_environment_non_stat():
 
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.3, -0.1, 0.1, 0.3])
+    changing = np.array([-0.6, -0.2, 0.2, 0.6])
     for i in range(len(product_prices)):
         prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
             i] * changing
