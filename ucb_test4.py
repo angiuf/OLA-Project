@@ -1,9 +1,11 @@
 from Source.UCBLearner4 import *
 from Source.Auxiliary import *
+from tqdm import trange
 
 
 def main():
-    env1, model, class_probability, T = generate_environment_non_stat()
+    T = 99
+    env1, model, class_probability = generate_environment_non_stat(T)
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
     phase_size = T / model["n_phase"]
@@ -32,7 +34,7 @@ def main():
     for i in range(n_exp):
         print("Experiment number", i)
 
-        for t in range(T):
+        for t in trange(T):
             phase = int(t / phase_size)
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
@@ -47,10 +49,7 @@ def main():
 
                 obs_reward /= len(data)
 
-            print("Pulled_arm: ", pulled_arm)
-
             instant_regret_obs[i].append(optimal_reward[phase] - obs_reward)
-            print("Time: ", t)
 
         learner.reset()
         env1.t = 0

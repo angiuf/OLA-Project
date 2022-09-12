@@ -41,9 +41,6 @@ def main():
 
                 obs_reward /= len(data)
 
-            # print("Time: ", t)
-            # print("Pulled_arm: ", pulled_arm)
-
             instant_regret_obs[i].append(optimal_reward - obs_reward)
         learner.reset()
 

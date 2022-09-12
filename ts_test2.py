@@ -44,10 +44,7 @@ def main():
 
                 obs_reward /= len(data)
 
-            #print("Pulled_arm: ", pulled_arm)
-
             instant_regret_obs[i].append(optimal_reward - obs_reward)
-            #print("Time: ", t)
 
         for t in trange(T - 4):
             pulled_arm = learner.act()
@@ -65,10 +62,7 @@ def main():
 
                 obs_reward /= len(data)
 
-            #print("Pulled_arm: ", pulled_arm)
-
             instant_regret_obs[i].append(optimal_reward - obs_reward)
-            #print("Time: ", t+4)
         learner.reset()
 
     show_results(instant_regret_obs, "TS test, second case")

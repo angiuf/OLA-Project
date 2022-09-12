@@ -33,3 +33,6 @@ class TSLearner3(Learner):
                     self.clicks_means[i, j] = np.mean(self.reward_per_clicks[i][j])
 
         self.model['clicks_means'] = self.clicks_means
+
+    def printp(self):
+        print(self.clicks_means)

@@ -31,7 +31,6 @@ class CUSUM:
 
         return False
 
-
     def reset(self):
         """
         reset all the relevant variables

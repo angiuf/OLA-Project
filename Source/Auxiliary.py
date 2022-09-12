@@ -51,7 +51,7 @@ def generate_environment():
     return env1, model, class_probability
 
 
-def generate_environment_non_stat():
+def generate_environment_non_stat(horizon):
     average = np.array([[[7, 9, 10], [4, 4, 3.5], [4, 4, 5], [4, 3.5, 5], [1.5, 2, 2]],
                         [[6, 8, 9], [1.5, 2, 2], [3, 3, 4], [2, 2.5, 2.5], [1, 1.5, 1]],
                         [[8, 11, 11.5], [2, 3, 3], [5, 5.5, 6.5], [3, 3, 3.5], [2, 2, 2]]])
@@ -78,7 +78,6 @@ def generate_environment_non_stat():
                                    [3, 0],
                                    [2, 4],
                                    [0, 1]])
-    horizon = 199
 
     env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
                                     lambda_secondary=0.5, horizon=horizon)
@@ -104,7 +103,7 @@ def generate_environment_non_stat():
              "lambda_secondary": 0.5,
              "daily_user": 1000
              }
-    return env2, model, class_probability, horizon
+    return env2, model, class_probability
 
 
 def generate_prices(product_prices):
@@ -163,6 +162,16 @@ def clicks_data(data_):
     return result
 
 
+def reward_per_prod(data):
+    result = [[] for _ in range(5)]
+    for i in range(len(data)):
+        for j in range(5):
+            if data[i][4][j]:
+                result[j].append(data[i][5][j])
+
+    return result
+
+
 # plots the regret with bands
 def show_results(instant_regret_obs, title=""):
     cumulative_regret_obs = np.zeros(len(instant_regret_obs[0]))
@@ -187,13 +196,3 @@ def show_results(instant_regret_obs, title=""):
     plt.title(title)
     plt.legend()
     plt.show()
-
-
-def reward_per_prod(data):
-    result = [[] for _ in range(5)]
-    for i in range(len(data)):
-        for j in range(5):
-            if data[i][4][j]:
-                result[j].append(data[i][5][j])
-
-    return result

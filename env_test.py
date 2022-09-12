@@ -39,7 +39,7 @@ def main():
     data = env1.round_single_day(n_daily_users=100, alpha_ratio=alphas_ratio, arms_pulled=[0, 0, 0, 0, 0],
                                  class_probability=class_probability)
 
-    print(data)
+    print(data[0])
 
 
 main()
