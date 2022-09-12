@@ -28,7 +28,26 @@ def main():
     for i in range(n_exp):
         print("Experiment number", i+1)
 
-        for t in trange(T):
+        for t in range(4):
+            pulled_arm = [t, t, t, t, t]
+            alpha_ratio = env1.alpha_ratio_otd()
+            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
+            env_data = conv_data(data)
+            learner.update(pulled_arm, env_data)
+
+            obs_reward = 0
+            if len(data):
+                for i_ in range(len(data)):
+                    obs_reward += np.sum(data[i_][0])
+
+                obs_reward /= len(data)
+
+            #print("Pulled_arm: ", pulled_arm)
+
+            instant_regret_obs[i].append(optimal_reward - obs_reward)
+            #print("Time: ", t)
+
+        for t in trange(T-4):
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)

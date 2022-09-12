@@ -24,7 +24,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     n_prod = model["n_prod"]
     n_price = model["n_price"]
     price = model["prices"]
-    K = 100  # number of seeds for MC simulation
+    K = 50  # number of seeds for MC simulation
     if rates == "real_conversion_rates":
         K = 1000
 
