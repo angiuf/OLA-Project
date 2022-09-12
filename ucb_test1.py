@@ -4,7 +4,7 @@ from tqdm import trange
 
 
 def main():
-    env1, model, class_probability = generate_environment()
+    env1, model = generate_environment()
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
@@ -31,7 +31,7 @@ def main():
         for t in trange(T):
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
-            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
+            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm)
             env_data = conv_data(data)
             learner.update(pulled_arm, env_data)
 

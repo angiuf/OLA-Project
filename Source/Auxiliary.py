@@ -26,7 +26,7 @@ def generate_environment():
                                    [2, 4],
                                    [0, 1]])
 
-    env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+    env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products, class_probability,
                               lambda_secondary=0.5)
 
     real_conv_rates = np.zeros((5, 4))
@@ -48,7 +48,7 @@ def generate_environment():
              "lambda_secondary": 0.5,
              "daily_user": 1000
              }
-    return env1, model, class_probability
+    return env1, model
 
 #This function given a time horizon returns the non stationary environment with the aggregated model and class, probability
 def generate_environment_non_stat(horizon):
@@ -79,7 +79,7 @@ def generate_environment_non_stat(horizon):
                                    [2, 4],
                                    [0, 1]])
 
-    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products, class_probability,
                                     lambda_secondary=0.5, horizon=horizon)
 
     real_conv_rates = np.zeros((3, 5, 4))
@@ -103,7 +103,7 @@ def generate_environment_non_stat(horizon):
              "lambda_secondary": 0.5,
              "daily_user": 1000
              }
-    return env2, model, class_probability
+    return env2, model
 
 #given the average prices this function  returns a matrix with all the possible prices for each product
 def generate_prices(product_prices):
@@ -183,6 +183,8 @@ def show_results(collected_data, title=""):
 
     instant_collected_data_new = np.array(collected_data_new)
 
+    collected_data_new = np.array(collected_data_new)
+
     for j in range(len(collected_data[0])):
         cumulative_collected_data[j] = np.mean(collected_data_new[:, j])
         cumulative_collected_data_std[j] = np.std(collected_data_new[:, j]) / np.sqrt(len(collected_data_new[:, j]))
@@ -196,3 +198,6 @@ def show_results(collected_data, title=""):
     plt.title(title)
     plt.legend()
     plt.show()
+
+def hoeffding_bound():
+
