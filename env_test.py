@@ -1,15 +1,4 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from EnvironmentPricing import EnvironmentPricing
-
-
-def generate_prices(product_prices):
-    prices = np.zeros((len(product_prices), 4))
-    changing = np.array([-0.4, -0.2, 0.2, 0.4])
-    for i in range(len(product_prices)):
-        prices[i, :] = np.ones(len(changing)) * product_prices[i] + np.ones(len(changing)) * product_prices[
-            i] * changing
-    return prices
+from Source.Auxiliary import *
 
 
 def main():
@@ -50,6 +39,7 @@ def main():
     data = env1.round_single_day(n_daily_users=100, alpha_ratio=alphas_ratio, arms_pulled=[0, 0, 0, 0, 0],
                                  class_probability=class_probability)
 
-    print(data)
+    print(data[0])
+
 
 main()

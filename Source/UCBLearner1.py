@@ -1,9 +1,9 @@
-from Learner import Learner
-from GreedyAlgorithm import *
+from Source.Learner import Learner
+from Source.GreedyAlgorithm import *
 import numpy as np
 
 
-class UCBLearner(Learner):
+class UCBLearner1(Learner):
     def __init__(self, model):
         super().__init__(model)
         self.cr_means = np.zeros(
@@ -17,25 +17,23 @@ class UCBLearner(Learner):
             (self.n_prod, self.n_price))  # counts number of times a price has been selected for a product
 
     def act(self):  # select the arm which has the highest upper confidence bound
-        arm_pulled = optimization_algorithm(self.model, False, "ucb_cr")
+        arm_pulled = optimization_algorithm(self.model, False, rates="ucb_cr")
         return arm_pulled
 
     def update(self, arm_pulled, conv_data):
-
         super().update(arm_pulled, conv_data)
         for i in range(self.n_prod):
-            self.cr_means[i, arm_pulled[i]] = np.mean(
-                self.reward_per_prod_price[i][
-                    arm_pulled[i]])  # update the mean of conversion rate of the arm that we pulled
-            self.n_prod_price[
-                i, arm_pulled[i]] += len(conv_data[i])  # TODO: += len(conv_data[i]) o t? con len(conv_data[i]) sembra meglio
+            if len(self.reward_per_prod_price[i][arm_pulled[i]]):
+                self.cr_means[i, arm_pulled[i]] = np.mean(self.reward_per_prod_price[i][arm_pulled[i]])
+
+            self.n_prod_price[i, arm_pulled[i]] += len(conv_data[i])
 
         for i in range(self.n_prod):
             for j in range(self.n_price):  # update the confidence bound for all arm
                 n = self.n_prod_price[i, j]
+                N = np.sum(self.n_prod_price[i, :])
                 if n > 0:
-                    self.conv_widths[i, j] = np.sqrt(
-                        2 * np.log(self.t) / n)  # TODO: log(t) o log(t) * daily_users?
+                    self.conv_widths[i, j] = np.sqrt(2 * np.log(N) / n)
                 else:
                     self.conv_widths[i, j] = np.inf
 

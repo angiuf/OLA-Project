@@ -1,4 +1,4 @@
-from EnvironmentPricing import *
+from Source.EnvironmentPricing import *
 
 
 # Model is a dictionary containing real or estimated parameters:
@@ -18,23 +18,30 @@ from EnvironmentPricing import *
 # Runs the optimization algorithm to find the best arm, rates is the string name of what is used as conversion rate,
 # e.g. to find the optimal arm we use the real conversion rates, in ucb we use means + widths, if act_rates is true
 # use the already computed activation rates
-def optimization_algorithm(model, verbose=False, rates="conversion_rate"):
-    verbose_print = print if verbose else lambda *a, **k, : None
+def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", alphas="real_alpha_ratio",
+                           quantity="real_quantity", clicks='real_P', phase=-1):
+    verbose_print = print if verbose else lambda *a, **k,: None
     n_prod = model["n_prod"]
     n_price = model["n_price"]
     price = model["prices"]
-    K = 200 # number of seeds for MC simulation
+    K = 50  # number of seeds for MC simulation
     if rates == "real_conversion_rates":
-        K = 10000
+        K = 1000
 
     price_arm = np.zeros(n_prod).astype('int')  # These are the indexes of the selected price arm
     rewards = np.zeros(n_prod)  # rewards of current arm  increased by one
     extracted_prices = price[range(n_prod), price_arm]
-    extracted_cr = model[rates][range(n_prod), price_arm]
+    # In a stationary environment there aren't any phases so the value is set to -1
+    if phase == -1:
+        extracted_cr = model[rates][range(n_prod), price_arm]
+    else:
+        extracted_cr = model[rates][phase, range(n_prod), price_arm]
+    extracted_alpha = model[alphas]
+    extracted_quantity = model[quantity]
 
-    act_rate = MC_simulation(model, extracted_cr, n_prod, K)
+    act_rate = mc_simulation(model, extracted_cr, n_prod, K, clicks)
 
-    initial_reward = return_reward(model, extracted_prices, extracted_cr, act_rate)
+    initial_reward = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha, extracted_quantity)
     previous_reward = initial_reward
     verbose_print('Initial reward: ', initial_reward)
     while True:
@@ -46,12 +53,16 @@ def optimization_algorithm(model, verbose=False, rates="conversion_rate"):
             else:
                 add_price = np.zeros(n_prod).astype('int')
                 add_price[i] = 1
-                extracted_cr = model[rates][range(n_prod), price_arm + add_price]  ## MISSING IN THE MAIN
+                if phase == -1:
+                    extracted_cr = model[rates][range(n_prod), price_arm + add_price]
+                else:
+                    extracted_cr = model[rates][phase, range(n_prod), price_arm + add_price]
                 extracted_prices = price[range(n_prod), price_arm + add_price]
 
-                act_rate = MC_simulation(model, extracted_cr, n_prod, K)
+                act_rate = mc_simulation(model, extracted_cr, n_prod, K, clicks)
 
-                rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate)
+                rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha,
+                                           extracted_quantity)
                 verbose_print("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])
 
         if max_arms_counter == n_prod:
@@ -66,23 +77,22 @@ def optimization_algorithm(model, verbose=False, rates="conversion_rate"):
             add_price[idx] = 1
             price_arm = price_arm + add_price
             previous_reward = rewards[idx]
-            verbose_print('Selected amr: ', price_arm, 'with reward: ', rewards[idx])
+            verbose_print('Selected arm: ', price_arm, 'with reward: ', rewards[idx])
 
-
-def return_reward(model, extracted_prices, extracted_cr, act_prob):
+#Returns the expected reward that a customer can give to the ecommerce
+def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alphas, extracted_quantity):
     reward = 0
     n_prod = len(extracted_prices)
 
     for i in range(n_prod):
         for j in range(n_prod):
-            reward += model["alphas"][i + 1] / np.sum(model["alphas"]) * act_prob[i, j] * extracted_cr[j] * \
-                      (extracted_prices[j] - model["cost"][j]) * model[
-                          "quantity"]
+            reward += extracted_alphas[i + 1] * act_prob[i, j] * np.min([extracted_cr[j], 100]) * (
+                    extracted_prices[j] - model["cost"][j]) * extracted_quantity
 
     return reward
 
-
-def MC_simulation(model, extracted_cr, n_products, K=500):
+#Computes a montecarlo simulation to compute the activation rates
+def mc_simulation(model, extracted_cr, n_products, K=100, clicks='real_P'):
     act_rates = np.zeros((n_products, n_products))
     # K = number of simulation for each seeds
 
@@ -91,7 +101,7 @@ def MC_simulation(model, extracted_cr, n_products, K=500):
         for k in range(K):
             seen_primary = np.full(shape=5, fill_value=False)
             seen_primary[i] = True
-            round_recursive(model, seen_primary, i, extracted_cr)
+            round_recursive(model, seen_primary, i, extracted_cr, clicks)
             zetas[seen_primary] += 1
 
         act_rates[i, :] = zetas / K
@@ -99,7 +109,7 @@ def MC_simulation(model, extracted_cr, n_products, K=500):
 
 
 # Auxiliary function needed in round_single_customer. Explore the tree in DFS
-def round_recursive(model, seen_primary, primary, extracted_cr):
+def round_recursive(model, seen_primary, primary, extracted_cr, clicks):
     if extracted_cr[primary] > 1:
         buy = True
     else:
@@ -113,16 +123,16 @@ def round_recursive(model, seen_primary, primary, extracted_cr):
         secondary_2 = model["secondary_products"][primary, 1]
 
         if not seen_primary[secondary_1]:
-            click_slot_1 = np.random.binomial(n=1, p=model["P"][
+            click_slot_1 = np.random.binomial(n=1, p=model[clicks][
                 primary, secondary_1])  # clicks on the shown product to visualize its page
             if click_slot_1:
                 seen_primary[secondary_1] = True
-                round_recursive(model, seen_primary, secondary_1, extracted_cr)
+                round_recursive(model, seen_primary, secondary_1, extracted_cr, clicks)
 
         if not seen_primary[secondary_2]:
-            p_ = model["P"][primary, secondary_2] * model["lambda_secondary"]
+            p_ = model[clicks][primary, secondary_2] * model["lambda_secondary"]
             click_slot_2 = np.random.binomial(n=1,
                                               p=p_)  # clicks on the shown product to visualize its page
             if click_slot_2:
                 seen_primary[secondary_2] = True
-                round_recursive(model, seen_primary, secondary_2, extracted_cr)
+                round_recursive(model, seen_primary, secondary_2, extracted_cr, clicks)

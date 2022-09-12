@@ -20,11 +20,74 @@ class EnvironmentPricing:
 
     # Returns data from the simulation of one day, data is a list of observations for each customer
     def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
-
         data = []
         for u in range(0, n_daily_users):
             data.append(self.round_single_customer(alpha_ratio, arms_pulled, class_probability))
         return data
+
+    # Returns the data of all the items bought by a single customer, in particular
+    # [reward for each object, number off objects, first objects seen, class of the user, seen objects]
+    def round_single_customer(self, alpha_ratio, arms_pulled, class_probability):
+        seen_primary = np.full(shape=5, fill_value=False)
+        extracted_class = np.random.choice(a=[0, 1, 2], p=class_probability)
+        current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
+                                           p=alpha_ratio)  # CASE -1: the customer goes to a competitor
+
+        number_objects = [0 for _ in range(5)]
+        reward_per_object = [0 for _ in range(5)]
+        bought_products = np.full(shape=5, fill_value=False)
+        clicks = [[[] for _ in range(5)] for _ in range(5)]
+
+        if current_product == -1:
+            return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products,
+                    clicks]
+
+        seen_primary[current_product] = True
+        self.round_recursive(seen_primary, current_product, extracted_class, arms_pulled, number_objects,
+                             reward_per_object, bought_products, clicks)
+        return [reward_per_object, number_objects, current_product, extracted_class, seen_primary, bought_products,
+                clicks]
+
+    # Auxiliary function needed in round_single_customer
+    def round_recursive(self, seen_primary, primary, extracted_class, arms_pulled, number_objects,
+                        reward_per_object, bought_products, clicks):
+        reward_per_object[primary], number_objects[primary] = self.round_single_product(primary, arms_pulled[primary],
+                                                                                        extracted_class)
+        reward = reward_per_object[primary]
+
+        if reward == 0:
+            bought_products[primary] = False
+            return
+
+        else:
+            bought_products[primary] = True
+            secondary_1 = self.secondary_products[primary, 0]
+            secondary_2 = self.secondary_products[primary, 1]
+
+            if not seen_primary[secondary_1]:
+                click_first_secondary = np.random.binomial(n=1, p=self.P[
+                    primary, secondary_1, extracted_class])  # clicks on the shown product to visualize its page
+                if click_first_secondary:
+                    clicks[primary][secondary_1].append(1)
+                    seen_primary[secondary_1] = True
+                    self.round_recursive(seen_primary, secondary_1, extracted_class, arms_pulled,
+                                         number_objects, reward_per_object, bought_products, clicks)
+                else:
+                    clicks[primary][secondary_1].append(0)
+
+            if not seen_primary[secondary_2]:
+                p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
+                click_second_secondary = np.random.binomial(n=1,
+                                                            p=p_)  # clicks on the shown product to visualize its page
+                if click_second_secondary:
+                    clicks[primary][secondary_2].append(1 / self.lambda_secondary)
+                    seen_primary[secondary_2] = True
+                    self.round_recursive(seen_primary, secondary_2, extracted_class, arms_pulled,
+                                         number_objects, reward_per_object, bought_products, clicks)
+                else:
+                    clicks[primary][secondary_2].append(0)
+
+        return
 
     # Returns the reward and the number of objects of a product bought
     def round_single_product(self, product, arm_pulled, extracted_class):
@@ -44,58 +107,6 @@ class EnvironmentPricing:
     # Returns the alpha ratio of the day
     def alpha_ratio_otd(self):
         return np.random.dirichlet(self.alphas_par)
-
-    # Returns the data of all the items bought by a single customer, in particular
-    # [reward for each object, number off objects, first objects seen, class of the user, seen objects]
-    def round_single_customer(self, alpha_ratio, arms_pulled, class_probability):
-        seen_primary = np.full(shape=5, fill_value=False)
-        extracted_class = np.random.choice(a=[0, 1, 2], p=class_probability)
-        current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
-                                           p=alpha_ratio)  # CASE -1: the customer goes to a competitor
-
-        number_objects = [0 for _ in range(5)]
-        reward_per_object = [0 for _ in range(5)]
-
-        if current_product == -1:
-            return [reward_per_object, number_objects, current_product, extracted_class, seen_primary]
-
-        seen_primary[current_product] = True
-        self.round_recursive(seen_primary, current_product, extracted_class, arms_pulled, number_objects,
-                             reward_per_object)
-        return [reward_per_object, number_objects, current_product, extracted_class, seen_primary]
-
-    # Auxiliary function needed in round_single_customer
-    def round_recursive(self, seen_primary, primary, extracted_class, arms_pulled, number_objects,
-                        reward_per_object):
-        reward_per_object[primary], number_objects[primary] = self.round_single_product(primary, arms_pulled[primary],
-                                                                                        extracted_class)
-        reward = reward_per_object[primary]
-
-        if reward == 0:
-            return
-
-        else:
-            secondary_1 = self.secondary_products[primary, 0]
-            secondary_2 = self.secondary_products[primary, 1]
-
-            if not seen_primary[secondary_1]:
-                click_first_secondary = np.random.binomial(n=1, p=self.P[
-                    primary, secondary_1, extracted_class])  # clicks on the shown product to visualize its page
-                if click_first_secondary:
-                    seen_primary[secondary_1] = True
-                    self.round_recursive(seen_primary, secondary_1, extracted_class, arms_pulled,
-                                         number_objects, reward_per_object)
-
-            if not seen_primary[secondary_2]:
-                p_ = self.P[primary, secondary_2, extracted_class] * self.lambda_secondary
-                click_second_secondary = np.random.binomial(n=1,
-                                                          p=p_)  # clicks on the shown product to visualize its page
-                if click_second_secondary:
-                    seen_primary[secondary_2] = True
-                    self.round_recursive(seen_primary, secondary_2, extracted_class, arms_pulled,
-                                         number_objects, reward_per_object)
-
-        return
 
     def get_real_conversion_rates(self, class_):
         conv_rate = np.zeros((5, 4))
