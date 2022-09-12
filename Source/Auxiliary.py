@@ -1,7 +1,7 @@
 from Source.NonStationaryEnvironment import *
 import matplotlib.pyplot as plt
 
-
+#function that generates a standard environment and returns the aggregated model and class probability
 def generate_environment():
     average = np.array([[9, 10, 7],
                         [3, 3, 2],
@@ -50,7 +50,7 @@ def generate_environment():
              }
     return env1, model, class_probability
 
-
+#This function given a time horizon returns the non stationary environment with the aggregated model and class, probability
 def generate_environment_non_stat(horizon):
     average = np.array([[[7, 9, 10], [4, 4, 3.5], [4, 4, 5], [4, 3.5, 5], [1.5, 2, 2]],
                         [[6, 8, 9], [1.5, 2, 2], [3, 3, 4], [2, 2.5, 2.5], [1, 1.5, 1]],
@@ -105,7 +105,7 @@ def generate_environment_non_stat(horizon):
              }
     return env2, model, class_probability
 
-
+#given the average prices this function  returns a matrix with all the possible prices for each product
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
     changing = np.array([-0.6, -0.2, 0.2, 0.6])
@@ -173,26 +173,26 @@ def reward_per_prod(data):
 
 
 # plots the regret with bands
-def show_results(instant_regret_obs, title=""):
-    cumulative_regret_obs = np.zeros(len(instant_regret_obs[0]))
-    cumulative_regret_obs_std = np.zeros(len(instant_regret_obs[0]))
-    instant_regret_obs_new = [[] for _ in range(len(instant_regret_obs))]
+def show_results(collected_data, title=""):
+    cumulative_collected_data = np.zeros(len(collected_data[0]))
+    cumulative_collected_data_std = np.zeros(len(collected_data[0]))
+    collected_data_new = [[] for _ in range(len(collected_data))]
 
-    for i in range(len(instant_regret_obs)):
-        instant_regret_obs_new[i] = np.cumsum(instant_regret_obs[i])
+    for i in range(len(collected_data)):
+        collected_data_new[i] = np.cumsum(collected_data[i])
 
-    instant_regret_obs_new = np.array(instant_regret_obs_new)
+    instant_collected_data_new = np.array(collected_data_new)
 
-    for j in range(len(instant_regret_obs[0])):
-        cumulative_regret_obs[j] = np.mean(instant_regret_obs_new[:, j])
-        cumulative_regret_obs_std[j] = np.std(instant_regret_obs_new[:, j]) / np.sqrt(len(instant_regret_obs_new[:, j]))
+    for j in range(len(collected_data[0])):
+        cumulative_collected_data[j] = np.mean(collected_data_new[:, j])
+        cumulative_collected_data_std[j] = np.std(collected_data_new[:, j]) / np.sqrt(len(collected_data_new[:, j]))
 
-    for i in range(len(instant_regret_obs_new[:, 0])):
-        plt.plot(instant_regret_obs_new[i, :], color='C3', alpha=0.1)
+    for i in range(len(collected_data_new[:, 0])):
+        plt.plot(collected_data_new[i, :], color='C3', alpha=0.1)
 
-    plt.plot(cumulative_regret_obs, color='C3', label='Observed')
-    plt.fill_between(range(len(cumulative_regret_obs)), cumulative_regret_obs - 2*cumulative_regret_obs_std,
-                     cumulative_regret_obs + 2*cumulative_regret_obs_std, alpha=0.2)
+    plt.plot(cumulative_collected_data, color='C3', label='Observed')
+    plt.fill_between(range(len(cumulative_collected_data)), cumulative_collected_data - 2*cumulative_collected_data_std,
+                     cumulative_collected_data + 2*cumulative_collected_data_std, alpha=0.2)
     plt.title(title)
     plt.legend()
     plt.show()

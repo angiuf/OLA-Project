@@ -79,7 +79,7 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
             previous_reward = rewards[idx]
             verbose_print('Selected arm: ', price_arm, 'with reward: ', rewards[idx])
 
-
+#Returns the expected reward that a customer can give to the ecommerce
 def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alphas, extracted_quantity):
     reward = 0
     n_prod = len(extracted_prices)
@@ -91,7 +91,7 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alp
 
     return reward
 
-
+#Computes a montecarlo simulation to compute the activation rates
 def mc_simulation(model, extracted_cr, n_products, K=100, clicks='real_P'):
     act_rates = np.zeros((n_products, n_products))
     # K = number of simulation for each seeds

@@ -26,12 +26,14 @@ class Learner:
     def act(self):
         pass
 
+    #The simplest update that adds the data for the conversion rate to reward_per_prod_per_price
     def update(self, arm_pulled, conv_data):
         self.t += 1
         for i in range(self.n_prod):
             self.reward_per_prod_price[i][arm_pulled[i]].extend(
                 conv_data[i])  # Append data for conversion rate for each prod, for each price
 
+    #Here we also update the matrices that contain the data to compute the alpha ratios and mean quantity bought by the clients
     def update2(self, arm_pulled, conv_data, alpha_data, quantity_data):
         self.t += 1
         for i in range(self.n_prod):
@@ -43,6 +45,7 @@ class Learner:
 
         self.reward_per_quantity.extend(quantity_data)
 
+    #This function updates the conversion rate data and the ones used to estimate the click matrix
     def update3(self, arm_pulled, conv_data, clicks_data):
         self.t += 1
         for i in range(self.n_prod):
@@ -53,6 +56,7 @@ class Learner:
             for j in range(self.n_prod):
                 self.reward_per_clicks[i][j].extend(clicks_data[i][j])
 
+    #This function updates the data with a sliding window approach
     def update4(self, arm_pulled, conv_data):
         self.t += 1
         if self.t < self.window_size:

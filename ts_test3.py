@@ -23,9 +23,10 @@ def main():
 
     learner = TSLearner3(model)
     instant_regret_obs = [[] for _ in range(n_exp)]
+    instant_reward_obs = [[] for _ in range(n_exp)]
 
     for i in range(n_exp):
-        print("Experiment number", i)
+        print("Experiment number", i+1)
 
         for t in range(4):
             pulled_arm = [t, t, t, t, t]
@@ -43,6 +44,8 @@ def main():
                 obs_reward /= len(data)
 
             instant_regret_obs[i].append(optimal_reward - obs_reward)
+            instant_reward_obs[i].append(obs_reward)
+
 
         for t in trange(T-4):
             pulled_arm = learner.act()
@@ -60,9 +63,13 @@ def main():
                 obs_reward /= len(data)
 
             instant_regret_obs[i].append(optimal_reward - obs_reward)
+            instant_reward_obs[i].append(obs_reward)
+
         learner.reset()
 
-    show_results(instant_regret_obs, "TS test, third case")
+    show_results(instant_regret_obs, "TS test, third case: regret")
+    show_results(instant_reward_obs, "TS test, third case: reward")
+
 
 
 main()

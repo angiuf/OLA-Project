@@ -29,6 +29,8 @@ def main():
 
     learner = UCBLearner5(model)
     instant_regret_obs = [[] for _ in range(n_exp)]
+    instant_reward_obs = [[] for _ in range(n_exp)]
+
 
     for i in range(n_exp):
         print("Experiment number", i+1)
@@ -50,10 +52,14 @@ def main():
                 obs_reward /= len(data)
 
             instant_regret_obs[i].append(optimal_reward[phase] - obs_reward)
+            instant_reward_obs[i].append(obs_reward)
+
         learner.reset()
         env1.t = 0
 
-    show_results(instant_regret_obs, "UCB test, fifth case")
+    show_results(instant_regret_obs, "UCB test, fifth case: regret")
+    show_results(instant_reward_obs, "UCB test, fifth case: reward")
+
 
 
 main()
