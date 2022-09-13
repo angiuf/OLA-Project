@@ -9,9 +9,9 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 100
+    T = 50
     n_exp = 1
-    daily_user = 2000
+    daily_user = 200
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
@@ -23,7 +23,7 @@ def main():
     print("Optimal reward: ", optimal_reward)
 
     learner = UCBLearner2(model)
-    split_learner = SplittingLearner(model)
+    split_learner = SplittingLearner()
     instant_regret_obs = [[] for _ in range(n_exp)]
     instant_reward_obs = [[] for _ in range(n_exp)]
 
@@ -36,7 +36,7 @@ def main():
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day_split(daily_user, alpha_ratio, [pulled_arm for _ in range(4)],
                                                [[0, 0], [0, 1], [1, 0], [1, 1]])
-            alldata.extend(data)
+            alldata.append(data)
             cr_data = conv_data(data)
             ar_data = alpha_data(data)
             q_data = quantity_data(data)
@@ -53,7 +53,7 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
             if t > 0 and t % 14 == 0:
-                print(split_learner.first_split(alldata))
+                print(split_learner.first_split(model, alldata))
 
         learner.reset()
 
