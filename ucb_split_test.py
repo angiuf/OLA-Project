@@ -9,9 +9,9 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 30
-    n_exp = 2
-    daily_user = 100
+    T = 60
+    n_exp = 20
+    daily_user = 200
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
@@ -52,14 +52,13 @@ def main():
             instant_regret_obs[i].append(optimal_reward - obs_reward)
             instant_reward_obs[i].append(obs_reward)
 
+
+        learner.feat = [[0, 0], [0, 1], [1, 0], [1, 1]]
         split, learners = split_learner.first_split(model.copy(), alldata.copy())
         if learners == []:
             learners = [learner]
 
-        print(len(learners))
-        print(split)
-
-        for t in range(T - 14):
+        for t in trange(T - 14):
             pulled_arms = []
             for ii in range(len(learners)):
                 pulled_arms.append(learners[ii].act())
@@ -68,8 +67,6 @@ def main():
                 for jj in range(len(learners)):
                     if features in learners[jj].feat:
                         pulled_arm.append(pulled_arms[jj])
-
-            #print(pulled_arm)
 
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day_split(daily_user, alpha_ratio, pulled_arm,

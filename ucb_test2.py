@@ -8,8 +8,8 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 50
-    n_exp = 10
+    T = 60
+    n_exp = 20
     daily_user = 200
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm

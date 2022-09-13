@@ -140,10 +140,10 @@ class SplittingLearner:
         # print(p_00, p_01, p_10, p_11)
 
         if split_0 < 0 and split_1 < 0:
-            print("No splitting")
+            #print("No splitting")
             return [[[0, 0], [0, 1], [1, 0], [1, 1]]], []
         elif split_0 > split_1:
-            print("Splitting 0")
+            #print("Splitting 0")
             second_split_00 = self.second_split(model_00, data_00, 1)
             l00 = []
             if second_split_00[0]:
@@ -179,7 +179,7 @@ class SplittingLearner:
             l_result.extend(l01)
             return result, l_result
         else:
-            print("Splitting 1")
+            #print("Splitting 1")
             second_split_10 = self.second_split(model_10, data_10, 0)
             l10 = []
             if second_split_10[0]:
