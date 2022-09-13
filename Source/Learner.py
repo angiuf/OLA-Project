@@ -16,6 +16,7 @@ class Learner:
 
         self.model_0 = model.copy()
         self.model = model
+        self.feat = []
 
     # we need two functions: one that sends actions to the environment, the other that collects the obs and
     # updates the inner functioning of the algorithm. Both of this function are specific to the learning algorithm

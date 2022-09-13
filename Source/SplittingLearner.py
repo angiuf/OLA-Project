@@ -144,37 +144,76 @@ class SplittingLearner:
             return [[[0, 0], [0, 1], [1, 0], [1, 1]]]
         elif split_0 > split_1:
             print("Splitting 0")
-            if self.second_split(model_00, data_00, 1):
+            second_split_00 = self.second_split(model_00, data_00, 1)
+            l00 = []
+            if second_split_00[0]:
                 c_00 = [[[0, 0]], [[0, 1]]]
+                l00.append(second_split_00[1])
+                l00.append(second_split_00[2])
+                l00[0].feat = [[0, 0]]
+                l00[1].feat = [[0, 1]]
+
             else:
                 c_00 = [[[0, 0], [0, 1]]]
+                l00.append(learner_00)
+                l00[0].feat = [[0, 0], [0, 1]]
 
-            if self.second_split(model_01, data_01, 1):
+            second_split_01 = self.second_split(model_01, data_01, 1)
+            l01 = []
+            if second_split_01[0]:
                 c_01 = [[[1, 0]], [[1, 1]]]
+                l01.append(second_split_01[1])
+                l01.append(second_split_01[2])
+                l01[0].feat = [[1, 0]]
+                l01[1].feat = [[1, 1]]
             else:
                 c_01 = [[[1, 0], [1, 1]]]
+                l01.append(learner_01)
+                l01[0].feat = [[[1, 0], [1, 1]]]
 
             result = []
+            l_result = []
             result.extend(c_00)
             result.extend(c_01)
-            return result
+            l_result.extend(l00)
+            l_result.extend(l01)
+            return result, l_result
         else:
             print("Splitting 1")
-
-            if self.second_split(model_10, data_10, 0):
+            second_split_10 = self.second_split(model_10, data_10, 0)
+            l10 = []
+            if second_split_10[0]:
                 c_10 = [[[0, 0]], [[1, 0]]]
+                l10.append(second_split_10[1])
+                l10.append(second_split_10[2])
+                l10[0].feat = [[0, 0]]
+                l10[1].feat = [[1, 0]]
+
             else:
                 c_10 = [[[0, 0], [1, 0]]]
+                l10.append(learner_10)
+                l10[0].feat = [[0, 0], [1, 0]]
 
-            if self.second_split(model_11, data_11, 0):
+            second_split_11 = self.second_split(model_11, data_11, 0)
+            l11 = []
+            if second_split_11[0]:
                 c_11 = [[[0, 1]], [[1, 1]]]
+                l11.append(second_split_11[1])
+                l11.append(second_split_11[2])
+                l11[0].feat = [[0, 1]]
+                l11[1].feat = [[1, 1]]
             else:
                 c_11 = [[[0, 1], [1, 1]]]
+                l11.append(learner_01)
+                l11[0].feat = [[[0, 1], [1, 1]]]
 
             result = []
             result.extend(c_10)
             result.extend(c_11)
-            return result
+            l_result = []
+            l_result.extend(l10)
+            l_result.extend(l11)
+            return result, l_result
 
     def second_split(self, model, data, other_feature):
         tot_reward = 0
@@ -240,9 +279,9 @@ class SplittingLearner:
         split_ = self.split(p_0, p_1, lb_0, lb_1, lb_tot)
 
         if split_ > 0:
-            return True
+            return [True, learner_0, learner_1]
         else:
-            return False
+            return [False]
 
 
 def hoeff_bound(mean, n_z, conf=0.90):

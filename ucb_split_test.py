@@ -53,7 +53,8 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
             if t > 0 and t % 14 == 0:
-                print(split_learner.first_split(model.copy(), alldata.copy()))
+                split, learners = split_learner.first_split(model.copy(), alldata.copy())
+                print(split)
 
         learner.reset()
 
