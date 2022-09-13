@@ -9,9 +9,9 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 50
-    n_exp = 10
-    daily_user = 200
+    T = 30
+    n_exp = 2
+    daily_user = 100
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
@@ -31,7 +31,7 @@ def main():
         print("Experiment number", i + 1)
         alldata = []
 
-        for t in trange(T):
+        for t in trange(14):
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day_split(daily_user, alpha_ratio, [pulled_arm for _ in range(4)],
@@ -52,9 +52,61 @@ def main():
             instant_regret_obs[i].append(optimal_reward - obs_reward)
             instant_reward_obs[i].append(obs_reward)
 
-            if t > 0 and t % 14 == 0:
+        split, learners = split_learner.first_split(model.copy(), alldata.copy())
+        if learners == []:
+            learners = [learner]
+
+        print(len(learners))
+        print(split)
+
+        for t in range(T - 14):
+            pulled_arms = []
+            for ii in range(len(learners)):
+                pulled_arms.append(learners[ii].act())
+            pulled_arm = []
+            for features in [[0, 0], [0, 1], [1, 0], [1, 1]]:
+                for jj in range(len(learners)):
+                    if features in learners[jj].feat:
+                        pulled_arm.append(pulled_arms[jj])
+
+            #print(pulled_arm)
+
+            alpha_ratio = env1.alpha_ratio_otd()
+            data = env1.round_single_day_split(daily_user, alpha_ratio, pulled_arm,
+                                               [[0, 0], [0, 1], [1, 0], [1, 1]])
+
+            alldata.append(data)
+
+            # run base learner
+            pulled_arm_base = learner.act()
+            alldata.append(data)
+            cr_data = conv_data(data)
+            ar_data = alpha_data(data)
+            q_data = quantity_data(data)
+            learner.update(pulled_arm_base, cr_data, ar_data, q_data)
+
+            for cust in data:
+                for ler in learners:
+                    if cust[3] in ler.feat:
+                        cr_data = conv_data([cust])
+                        ar_data = alpha_data([cust])
+                        q_data = quantity_data([cust])
+                        ler.update(cust[7], cr_data, ar_data, q_data)
+
+            obs_reward = 0
+            if len(data):
+                for i_ in range(len(data)):
+                    obs_reward += np.sum(data[i_][0])
+
+                obs_reward /= len(data)
+
+            instant_regret_obs[i].append(optimal_reward - obs_reward)
+            instant_reward_obs[i].append(obs_reward)
+
+            if t % 14 == 0:
                 split, learners = split_learner.first_split(model.copy(), alldata.copy())
-                print(split)
+                if learners == []:
+                    learners = [learner]
 
         learner.reset()
 

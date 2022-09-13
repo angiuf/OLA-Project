@@ -141,7 +141,7 @@ class SplittingLearner:
 
         if split_0 < 0 and split_1 < 0:
             print("No splitting")
-            return [[[0, 0], [0, 1], [1, 0], [1, 1]]]
+            return [[[0, 0], [0, 1], [1, 0], [1, 1]]], []
         elif split_0 > split_1:
             print("Splitting 0")
             second_split_00 = self.second_split(model_00, data_00, 1)
@@ -169,7 +169,7 @@ class SplittingLearner:
             else:
                 c_01 = [[[1, 0], [1, 1]]]
                 l01.append(learner_01)
-                l01[0].feat = [[[1, 0], [1, 1]]]
+                l01[0].feat = [[1, 0], [1, 1]]
 
             result = []
             l_result = []
@@ -205,7 +205,7 @@ class SplittingLearner:
             else:
                 c_11 = [[[0, 1], [1, 1]]]
                 l11.append(learner_01)
-                l11[0].feat = [[[0, 1], [1, 1]]]
+                l11[0].feat = [[0, 1], [1, 1]]
 
             result = []
             result.extend(c_10)
