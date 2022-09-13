@@ -9,8 +9,8 @@ class SplittingLearner:
     def __init__(self, model):
         self.model = model
 
-    def split(self, p0, p1, lb0, lb1,
-              lb_tot):  # p are the class probabilities, lb are the lower bounds for aggregated and the split
+    def split(self, p0, p1, lb0, lb1, lb_tot):  # p are the class probabilities,
+        # lb are the lower bounds for aggregated and the split
         return (p0 * lb0 + p1 * lb1) - lb_tot
 
     def first_split(self, data):
@@ -50,15 +50,15 @@ class SplittingLearner:
                 n_f_11 += 1
 
         mean_reward = tot_reward / n
-        # mean_var = (tot_reward_2 - n * mean_reward ** 2) / n - 1)
+        mean_var = (tot_reward_2 - n * mean_reward ** 2) / (n - 1)
         mean_reward_f_00 = tot_reward_f_00 / n_f_00
         mean_reward_f_01 = tot_reward_f_01 / n_f_01
         mean_reward_f_10 = tot_reward_f_10 / n_f_10
         mean_reward_f_11 = tot_reward_f_11 / n_f_11
-        # var_f_00 = (tot_reward_f_00_2 - n_f_00 * mean_reward_f_00 ** 2) / (n_f_00 - 1)
-        # var_f_01 = (tot_reward_f_01_2 - n_f_01 * mean_reward_f_01 ** 2) / (n_f_01 - 1)
-        # var_f_10 = (tot_reward_f_10_2 - n_f_10 * mean_reward_f_10 ** 2) / (n_f_10 - 1)
-        # var_f_11 = (tot_reward_f_11_2 - n_f_11 * mean_reward_f_11 ** 2) / (n_f_11 - 1)
+        var_f_00 = (tot_reward_f_00_2 - n_f_00 * mean_reward_f_00 ** 2) / (n_f_00 - 1)
+        var_f_01 = (tot_reward_f_01_2 - n_f_01 * mean_reward_f_01 ** 2) / (n_f_01 - 1)
+        var_f_10 = (tot_reward_f_10_2 - n_f_10 * mean_reward_f_10 ** 2) / (n_f_10 - 1)
+        var_f_11 = (tot_reward_f_11_2 - n_f_11 * mean_reward_f_11 ** 2) / (n_f_11 - 1)
 
         lb_tot = hoeff_bound(mean_reward, n)
 
@@ -67,6 +67,13 @@ class SplittingLearner:
         lb_10 = hoeff_bound(mean_reward_f_10, n_f_10)
         lb_11 = hoeff_bound(mean_reward_f_11, n_f_11)
 
+        # lb_tot = clt_bound(mean_reward, mean_var, n)
+        #
+        # lb_00 = clt_bound(mean_reward_f_00, var_f_00, n_f_00)
+        # lb_01 = clt_bound(mean_reward_f_01, var_f_01, n_f_01)
+        # lb_10 = clt_bound(mean_reward_f_10, var_f_10, n_f_10)
+        # lb_11 = clt_bound(mean_reward_f_11, var_f_11, n_f_11)
+
         p_00 = hoeff_bound(n_f_00 / n, n_f_00)
         p_01 = hoeff_bound(n_f_01 / n, n_f_01)
         p_10 = hoeff_bound(n_f_10 / n, n_f_10)
@@ -74,6 +81,11 @@ class SplittingLearner:
 
         split_0 = self.split(p_00, p_01, lb_00, lb_01, lb_tot)
         split_1 = self.split(p_10, p_11, lb_10, lb_11, lb_tot)
+
+        print(split_0, split_1)
+        print(mean_reward_f_00,mean_reward_f_01, mean_reward_f_10, mean_reward_f_11)
+        print(lb_00, lb_01, lb_10, lb_11)
+        print(p_00, p_01, lb_10, lb_11)
 
         if split_0 < 0 and split_1 < 0:
             return [[[0, 0], [0, 1], [1, 0], [1, 1]]]
@@ -115,7 +127,6 @@ class SplittingLearner:
             else:
                 c_11 = [[[0, 1], [1, 1]]]
             return c_10.extend(c_11)
-
 
     def second_split(self, data, other_feature):
         tot_reward = 0
@@ -160,9 +171,9 @@ class SplittingLearner:
             return False
 
 
-def hoeff_bound(mean, n_z, conf=0.95):
+def hoeff_bound(mean, n_z, conf=0.05):
     return mean - np.sqrt(-np.log(conf) / (2 * n_z))
 
 
 def clt_bound(mean, var, n):
-    return mean - var / n * 1.64
+    return mean - np.sqrt(var/n) * 1.64

@@ -43,10 +43,10 @@ class EnvironmentPricing:
         for u in range(0, n_daily_users):
             extracted_class = np.random.choice(a=[0, 1, 2], p=self.class_probability)
             # [0,0] = children ; [1,0] = adult_male ; [1,1] adult_female
-            extracted_features = np.zeros(2)
+            extracted_features = [0, 0]
             if extracted_class == 0:
                 extracted_features[0] = 0
-                extracted_features[1] = np.random.choice(a=[0, 1], p=0.5)
+                extracted_features[1] = np.random.randint(0, 2)
             elif extracted_class == 1:
                 extracted_features[0] = 1
                 extracted_features[1] = 0

@@ -3,11 +3,11 @@ import matplotlib.pyplot as plt
 
 #function that generates a standard environment and returns the aggregated model and class probability
 def generate_environment():
-    average = np.array([[9, 10, 7],
-                        [3, 3, 2],
-                        [4, 4, 5],
-                        [3, 3.5, 3],
-                        [1.5, 2, 2]])
+    average = np.array([[7, 10, 10],
+                        [2.5, 3, 3.5],
+                        [3.5, 5, 5],
+                        [2, 4, 3],
+                        [1.5, 2.5, 2.5]])
     variance = np.array([[1, 1, 1],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5],
@@ -198,6 +198,3 @@ def show_results(collected_data, title=""):
     plt.title(title)
     plt.legend()
     plt.show()
-
-def hoeffding_bound():
-

@@ -9,9 +9,9 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 2
+    T = 100
     n_exp = 1
-    daily_user = 5
+    daily_user = 2000
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
@@ -28,13 +28,14 @@ def main():
     instant_reward_obs = [[] for _ in range(n_exp)]
 
     for i in range(n_exp):
-        print("Experiment number", i+1)
+        print("Experiment number", i + 1)
         alldata = []
 
         for t in trange(T):
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
-            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm)
+            data = env1.round_single_day_split(daily_user, alpha_ratio, [pulled_arm for _ in range(4)],
+                                               [[0, 0], [0, 1], [1, 0], [1, 1]])
             alldata.extend(data)
             cr_data = conv_data(data)
             ar_data = alpha_data(data)
@@ -51,8 +52,8 @@ def main():
             instant_regret_obs[i].append(optimal_reward - obs_reward)
             instant_reward_obs[i].append(obs_reward)
 
-            if t%14 == 0:
-                split_learner.evaluate_split(alldata)
+            if t > 0 and t % 14 == 0:
+                print(split_learner.first_split(alldata))
 
         learner.reset()
 
