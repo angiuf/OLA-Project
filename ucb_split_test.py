@@ -10,7 +10,7 @@ def main():
     prices = model["prices"]
 
     T = 50
-    n_exp = 1
+    n_exp = 10
     daily_user = 200
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
@@ -53,7 +53,7 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
             if t > 0 and t % 14 == 0:
-                print(split_learner.first_split(model, alldata))
+                print(split_learner.first_split(model.copy(), alldata.copy()))
 
         learner.reset()
 

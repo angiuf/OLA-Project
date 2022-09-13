@@ -60,7 +60,7 @@ class EnvironmentPricing:
                 true_arms_pulled = arms_pulled[1]
             elif extracted_features == arms_features[2]:
                 true_arms_pulled = arms_pulled[2]
-            elif extracted_features == arms_features[3]:
+            else:
                 true_arms_pulled = arms_pulled[3]
             data.append(self.round_single_customer(alpha_ratio, true_arms_pulled, extracted_features, extracted_class))
         return data
