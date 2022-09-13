@@ -1,7 +1,8 @@
 from Source.NonStationaryEnvironment import *
 import matplotlib.pyplot as plt
 
-#function that generates a standard environment and returns the aggregated model and class probability
+
+# function that generates a standard environment and returns the aggregated model and class probability
 def generate_environment():
     average = np.array([[7, 10, 10],
                         [2.5, 3, 3.5],
@@ -26,7 +27,8 @@ def generate_environment():
                                    [2, 4],
                                    [0, 1]])
 
-    env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products, class_probability,
+    env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                              class_probability,
                               lambda_secondary=0.5)
 
     real_conv_rates = np.zeros((5, 4))
@@ -50,7 +52,8 @@ def generate_environment():
              }
     return env1, model
 
-#This function given a time horizon returns the non stationary environment with the aggregated model and class, probability
+
+# This function given a time horizon returns the non stationary environment with the aggregated model and class, probability
 def generate_environment_non_stat(horizon):
     average = np.array([[[7, 9, 10], [4, 4, 3.5], [4, 4, 5], [4, 3.5, 5], [1.5, 2, 2]],
                         [[6, 8, 9], [1.5, 2, 2], [3, 3, 4], [2, 2.5, 2.5], [1, 1.5, 1]],
@@ -79,7 +82,8 @@ def generate_environment_non_stat(horizon):
                                    [2, 4],
                                    [0, 1]])
 
-    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products, class_probability,
+    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                                    class_probability,
                                     lambda_secondary=0.5, horizon=horizon)
 
     real_conv_rates = np.zeros((3, 5, 4))
@@ -105,7 +109,8 @@ def generate_environment_non_stat(horizon):
              }
     return env2, model
 
-#given the average prices this function  returns a matrix with all the possible prices for each product
+
+# given the average prices this function  returns a matrix with all the possible prices for each product
 def generate_prices(product_prices):
     prices = np.zeros((len(product_prices), 4))
     changing = np.array([-0.6, -0.2, 0.2, 0.6])
@@ -181,8 +186,6 @@ def show_results(collected_data, title=""):
     for i in range(len(collected_data)):
         collected_data_new[i] = np.cumsum(collected_data[i])
 
-    instant_collected_data_new = np.array(collected_data_new)
-
     collected_data_new = np.array(collected_data_new)
 
     for j in range(len(collected_data[0])):
@@ -192,9 +195,39 @@ def show_results(collected_data, title=""):
     for i in range(len(collected_data_new[:, 0])):
         plt.plot(collected_data_new[i, :], color='C3', alpha=0.1)
 
+    cumulative_collected_data = list(cumulative_collected_data)
+    cumulative_collected_data_std = list(cumulative_collected_data_std)
+    cumulative_collected_data.insert(0, 0)
+    cumulative_collected_data_std.insert(0, 0)
+    cumulative_collected_data = np.array(cumulative_collected_data)
+    cumulative_collected_data_std = np.array(cumulative_collected_data_std)
+
     plt.plot(cumulative_collected_data, color='C3', label='Observed')
-    plt.fill_between(range(len(cumulative_collected_data)), cumulative_collected_data - 2*cumulative_collected_data_std,
-                     cumulative_collected_data + 2*cumulative_collected_data_std, alpha=0.2)
+    plt.fill_between(range(len(cumulative_collected_data)),
+                     cumulative_collected_data - 2 * cumulative_collected_data_std,
+                     cumulative_collected_data + 2 * cumulative_collected_data_std, alpha=0.2)
     plt.title(title)
     plt.legend()
+    plt.show()
+
+
+def show_reward(instant_reward_obs, title=""):
+    n_exp = len(instant_reward_obs)
+    instant_reward_obs_t = []
+    for i in range(len(instant_reward_obs[0])):
+        instant_reward_obs_t.append([])
+        for j in range(n_exp):
+            instant_reward_obs_t[i].append(instant_reward_obs[j][i])
+
+    mean = [np.mean(i) for i in instant_reward_obs_t]
+    var = [np.std(i) for i in instant_reward_obs_t]
+    mean.insert(0, 0)
+    var.insert(0, 0)
+    mean = np.array(mean)
+    var = np.array(var)
+
+    plt.plot(mean, color='C3', label='Observed')
+    plt.fill_between(range(len(mean)),
+                     mean - 2 * var,
+                     mean + 2 * var, alpha=0.2)
     plt.show()
