@@ -193,7 +193,9 @@ def show_results(collected_data, title=""):
         cumulative_collected_data_std[j] = np.std(collected_data_new[:, j]) / np.sqrt(len(collected_data_new[:, j]))
 
     for i in range(len(collected_data_new[:, 0])):
-        plt.plot(collected_data_new[i, :], color='C3', alpha=0.1)
+        a = list(collected_data_new[i, :])
+        a.insert(0,0)
+        plt.plot(a, color='C3', alpha=0.1)
 
     cumulative_collected_data = list(cumulative_collected_data)
     cumulative_collected_data_std = list(cumulative_collected_data_std)
@@ -204,8 +206,8 @@ def show_results(collected_data, title=""):
 
     plt.plot(cumulative_collected_data, color='C3', label='Observed')
     plt.fill_between(range(len(cumulative_collected_data)),
-                     cumulative_collected_data - 2 * cumulative_collected_data_std,
-                     cumulative_collected_data + 2 * cumulative_collected_data_std, alpha=0.2)
+                     cumulative_collected_data - cumulative_collected_data_std,
+                     cumulative_collected_data + cumulative_collected_data_std, alpha=0.2)
     plt.title(title)
     plt.legend()
     plt.show()
@@ -228,6 +230,6 @@ def show_reward(instant_reward_obs, title=""):
 
     plt.plot(mean, color='C3', label='Observed')
     plt.fill_between(range(len(mean)),
-                     mean - 2 * var,
-                     mean + 2 * var, alpha=0.2)
+                     mean - var,
+                     mean + var, alpha=0.2)
     plt.show()
