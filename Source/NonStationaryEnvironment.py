@@ -12,12 +12,12 @@ class NonStationaryEnvironment(EnvironmentPricing):
         n_phases = self.mean.shape[2]
         self.phase_size = horizon / n_phases
 
-    def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
+    def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled):
         current_phase = int(self.t / self.phase_size)
         self.t += 1
         data = []
         for u in range(0, n_daily_users):
-            data.append(self.round_single_customer(alpha_ratio, arms_pulled, class_probability, current_phase))
+            data.append(self.round_single_customer(alpha_ratio, arms_pulled, self.class_probability, current_phase))
         return data
 
     def round_single_customer(self, alpha_ratio, arms_pulled, class_probability, current_phase):
