@@ -47,7 +47,7 @@ def main():
         learner.reset()
 
     show_results(instant_regret_obs, "UCB test, first case: regret")
-    show_results(instant_reward_obs, "UCB test, first case: reward")
+    show_reward(instant_reward_obs, "UCB test, first case: reward")
 
 
 
