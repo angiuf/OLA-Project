@@ -3,6 +3,10 @@ from Source.SplittingLearner import *
 from Source.Auxiliary import *
 from tqdm import trange
 
+# TODO: implement all the algorithms with not fully connected click probability graph
+# TODO: implement different alphas for different classes
+# TODO: check splitting condition (always splitting)
+# TODO: report
 
 def main():
     env1, model = generate_environment()
