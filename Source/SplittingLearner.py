@@ -14,7 +14,8 @@ class SplittingLearner:
         return (p0 * lb0 + p1 * lb1) - lb_tot
 
     def first_split(self, model, data):
-
+        # The first number indicate the feature, and the second feature indicate its value. So, for example,
+        # 00 refers to the case when the first feature is 0.
         model_00 = model.copy()
         learner_00 = UCBLearner2(model_00)
         model_01 = model.copy()
@@ -82,20 +83,28 @@ class SplittingLearner:
         arm_10 = learner_10.act()
         arm_11 = learner_11.act()
 
+        act_rate_00 = mc_simulation(model_00, [model_00['cr_means'][i][arm_00[i]] for i in range(5)], 5)
+
         mu_00 = return_reward(model_00, [model_00['prices'][i][arm_00[i]] for i in range(5)],
-                              [model_00['cr_means'][i][arm_00[i]] for i in range(5)], model_00['real_P'],
+                              [model_00['cr_means'][i][arm_00[i]] for i in range(5)], act_rate_00,
                               model_00['alpha_means'], model_00['quantity_mean'])
 
+        act_rate_01 = mc_simulation(model_01, [model_01['cr_means'][i][arm_01[i]] for i in range(5)], 5)
+
         mu_01 = return_reward(model_01, [model_01['prices'][i][arm_01[i]] for i in range(5)],
-                              [model_01['cr_means'][i][arm_01[i]] for i in range(5)], model_01['real_P'],
+                              [model_01['cr_means'][i][arm_01[i]] for i in range(5)], act_rate_01,
                               model_01['alpha_means'], model_01['quantity_mean'])
 
+        act_rate_10 = mc_simulation(model_10, [model_10['cr_means'][i][arm_10[i]] for i in range(5)], 5)
+
         mu_10 = return_reward(model_10, [model_10['prices'][i][arm_10[i]] for i in range(5)],
-                              [model_10['cr_means'][i][arm_10[i]] for i in range(5)], model_10['real_P'],
+                              [model_10['cr_means'][i][arm_10[i]] for i in range(5)], act_rate_10,
                               model_10['alpha_means'], model_10['quantity_mean'])
 
+        act_rate_11 = mc_simulation(model_11, [model_11['cr_means'][i][arm_11[i]] for i in range(5)], 5)
+
         mu_11 = return_reward(model_11, [model_11['prices'][i][arm_11[i]] for i in range(5)],
-                              [model_11['cr_means'][i][arm_11[i]] for i in range(5)], model_11['real_P'],
+                              [model_11['cr_means'][i][arm_11[i]] for i in range(5)], act_rate_11,
                               model_11['alpha_means'], model_11['quantity_mean'])
 
         tot_reward = 0
@@ -131,7 +140,9 @@ class SplittingLearner:
         p_10 = hoeff_bound(n_f_10 / n, n_f_10)
         p_11 = hoeff_bound(n_f_11 / n, n_f_11)
 
+        # Evaluate the splitting condition for the first feature
         split_0 = self.split(p_00, p_01, lb_00, lb_01, lb_tot)
+        # Evaluate the splitting condition for the second feature
         split_1 = self.split(p_10, p_11, lb_10, lb_11, lb_tot)
 
         # print(split_0, split_1)
@@ -260,12 +271,16 @@ class SplittingLearner:
         arm_0 = learner_0.act()
         arm_1 = learner_1.act()
 
+        act_rate_0 = mc_simulation(model_0, [model_0['cr_means'][i][arm_0[i]] for i in range(5)], 5)
+
         mu_0 = return_reward(model_0, [model_0['prices'][i][arm_0[i]] for i in range(5)],
-                             [model_0['cr_means'][i][arm_0[i]] for i in range(5)], model_0['real_P'],
+                             [model_0['cr_means'][i][arm_0[i]] for i in range(5)], act_rate_0,
                              model_0['alpha_means'], model_0['quantity_mean'])
 
+        act_rate_1 = mc_simulation(model_1, [model_1['cr_means'][i][arm_1[i]] for i in range(5)], 5)
+
         mu_1 = return_reward(model_1, [model_1['prices'][i][arm_1[i]] for i in range(5)],
-                             [model_1['cr_means'][i][arm_1[i]] for i in range(5)], model_1['real_P'],
+                             [model_1['cr_means'][i][arm_1[i]] for i in range(5)], act_rate_1,
                              model_1['alpha_means'], model_1['quantity_mean'])
 
         lb_tot = hoeff_bound(mean_reward, n)

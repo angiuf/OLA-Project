@@ -10,7 +10,7 @@ def main():
     prices = model["prices"]
 
     T = 60
-    n_exp = 20
+    n_exp = 2
     daily_user = 200
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
@@ -22,7 +22,7 @@ def main():
                                    optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
     print("Optimal reward: ", optimal_reward)
 
-    learner = UCBLearner2(model)
+    learner = UCBLearner2(model.copy())
     split_learner = SplittingLearner()
     instant_regret_obs = [[] for _ in range(n_exp)]
     instant_reward_obs = [[] for _ in range(n_exp)]
@@ -55,6 +55,8 @@ def main():
 
         learner.feat = [[0, 0], [0, 1], [1, 0], [1, 1]]
         split, learners = split_learner.first_split(model.copy(), alldata.copy())
+        for class_f in split:
+            print(class_f)
         if learners == []:
             learners = [learner]
 
@@ -100,8 +102,10 @@ def main():
             instant_regret_obs[i].append(optimal_reward - obs_reward)
             instant_reward_obs[i].append(obs_reward)
 
-            if t % 14 == 0:
+            if t % 14 == 0 and t > 0:
                 split, learners = split_learner.first_split(model.copy(), alldata.copy())
+                for class_f in split:
+                    print(class_f)
                 if learners == []:
                     learners = [learner]
 
