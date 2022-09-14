@@ -58,7 +58,7 @@ def main():
         env1.t = 0
 
     show_results(instant_regret_obs, "UCB test, fifth case: regret")
-    show_results(instant_reward_obs, "UCB test, fifth case: reward")
+    show_reward(instant_reward_obs, "UCB test, fifth case: reward")
 
 
 
