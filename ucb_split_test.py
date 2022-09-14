@@ -9,8 +9,8 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 60
-    n_exp = 2
+    T = 90
+    n_exp = 40
     daily_user = 200
 
     all_features = [[0, 0], [0, 1], [1, 0], [1, 1]]
