@@ -8,8 +8,8 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 60
-    n_exp = 20
+    T = 120
+    n_exp = 5
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
@@ -66,7 +66,7 @@ def main():
         learner.reset()
 
     show_results(instant_regret_obs, "TS test, first case: regret")
-    show_results(instant_reward_obs, "TS test, first case: reward")
+    show_reward(instant_reward_obs, "TS test, first case: reward")
 
 
 main()
