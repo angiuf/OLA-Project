@@ -10,7 +10,7 @@ def main():
     prices = model["prices"]
 
     T = 90
-    n_exp = 40
+    n_exp = 2
     daily_user = 200
 
     all_features = [[0, 0], [0, 1], [1, 0], [1, 1]]
@@ -25,7 +25,6 @@ def main():
     print("Optimal reward: ", optimal_reward)
 
     learner = UCBLearner2(model.copy())
-    split_learner = SplittingLearner()
     instant_regret_obs = [[] for _ in range(n_exp)]
     instant_reward_obs = [[] for _ in range(n_exp)]
 
@@ -55,7 +54,7 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
         learner.feat = all_features
-        learners = split_learner.first_split(model.copy(), alldata.copy())
+        learners = first_split(model.copy(), alldata.copy(), True)
 
         for ler in learners:
             print(ler.feat)
@@ -119,7 +118,7 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
             if t % 14 == 0 and t > 0:
-                learners = split_learner.first_split(model.copy(), alldata.copy())
+                learners = first_split(model.copy(), alldata.copy(), True)
                 for ler in learners:
                     print(ler.feat)
                 if learners == []:
