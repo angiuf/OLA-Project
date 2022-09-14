@@ -70,7 +70,7 @@ def main():
         learner.reset()
 
     show_results(instant_regret_obs, "TS test, second case: regret")
-    show_results(instant_reward_obs, "TS test, second case: reward")
+    show_reward(instant_reward_obs, "TS test, second case: reward")
 
 
 main()
