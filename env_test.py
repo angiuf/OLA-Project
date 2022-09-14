@@ -34,12 +34,13 @@ def main():
                                    [0, 1]])
 
     env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
-                              lambda_secondary=0.5)
+                              class_probability=class_probability, lambda_secondary=0.5)
     alphas_ratio = env1.alpha_ratio_otd()
-    data = env1.round_single_day(n_daily_users=100, alpha_ratio=alphas_ratio, arms_pulled=[0, 0, 0, 0, 0],
-                                 class_probability=class_probability)
+    data = env1.round_single_day(n_daily_users=100, alpha_ratio=alphas_ratio, arms_pulled=[0, 0, 0, 0, 0])
 
-    print(data[0])
+    print("Customer 1:", data[0])
+    print("Customer 2:", data[1])
+    print("Customer 3:", data[2])
 
 
 main()
