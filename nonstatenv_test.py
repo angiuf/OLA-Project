@@ -31,13 +31,12 @@ def main():
     horizon = 99
 
     env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
-                                    lambda_secondary=0.5, horizon=horizon)
+                                    lambda_secondary=0.5, class_probability=class_probability, horizon=horizon)
 
     tot_reward = []
     for t in trange(horizon):
         alphas_ratio = env2.alpha_ratio_otd()
-        data = env2.round_single_day(n_daily_users=100, alpha_ratio=alphas_ratio, arms_pulled=[0, 0, 0, 0, 0],
-                                     class_probability=class_probability)
+        data = env2.round_single_day(n_daily_users=100, alpha_ratio=alphas_ratio, arms_pulled=[0, 0, 0, 0, 0])
         reward = 0
         for i in range(len(data)):
             for j in range(5):
