@@ -25,17 +25,40 @@ class SplittingLearner:
         model_11 = model.copy()
         learner_11 = UCBLearner2(model_11)
 
+        tot_reward = 0
+        n = 0
+        n_f_00 = 0
+        n_f_01 = 0
+        n_f_10 = 0
+        n_f_11 = 0
+
         # Split the data
         data_00 = []
         data_01 = []
+        data_10 = []
+        data_11 = []
         for day in data:
             day_00 = []
             day_01 = []
-            for datum in day:
-                if datum[3][0] == 0:
-                    day_00.append(datum)
+            day_10 = []
+            day_11 = []
+            for cust in day:
+                tot_reward += np.sum(cust[0])
+                n += 1
+                if cust[3][0] == 0:
+                    day_00.append(cust)
+                    n_f_00 += 1
                 else:
-                    day_01.append(datum)
+                    day_01.append(cust)
+                    n_f_01 += 1
+
+                if cust[3][1] == 0:
+                    day_10.append(cust)
+                    n_f_10 += 1
+                else:
+                    day_11.append(cust)
+                    n_f_11 += 1
+
             cr_data_00 = conv_data(day_00)
             ar_data_00 = alpha_data(day_00)
             q_data_00 = quantity_data(day_00)
@@ -47,21 +70,6 @@ class SplittingLearner:
             q_data_01 = quantity_data(day_01)
             pulled_arm_01 = day_01[0][7]
             learner_01.update(pulled_arm_01, cr_data_01, ar_data_01, q_data_01)
-
-            data_00.extend(day_00)
-            data_01.extend(day_01)
-
-
-        data_10 = []
-        data_11 = []
-        for day in data:
-            day_10 = []
-            day_11 = []
-            for datum in day:
-                if datum[3][1] == 0:
-                    day_10.append(datum)
-                else:
-                    day_11.append(datum)
 
             cr_data_10 = conv_data(day_10)
             ar_data_10 = alpha_data(day_10)
@@ -75,8 +83,10 @@ class SplittingLearner:
             pulled_arm_11 = day_11[0][7]
             learner_11.update(pulled_arm_11, cr_data_11, ar_data_11, q_data_11)
 
-            data_10.extend(day_10)
-            data_11.extend(day_11)
+            data_00.append(day_00)
+            data_01.append(day_01)
+            data_10.append(day_10)
+            data_11.append(day_11)
 
         arm_00 = learner_00.act()
         arm_01 = learner_01.act()
@@ -107,25 +117,6 @@ class SplittingLearner:
                               [model_11['cr_means'][i][arm_11[i]] for i in range(5)], act_rate_11,
                               model_11['alpha_means'], model_11['quantity_mean'])
 
-        tot_reward = 0
-        n = 0
-        n_f_00 = 0
-        n_f_01 = 0
-        n_f_10 = 0
-        n_f_11 = 0
-        for day in data:
-            for datum in day:
-                tot_reward += np.sum(datum[0])
-                if datum[3][0] == 0:
-                    n_f_00 += 1
-                if datum[3][0] == 1:
-                    n_f_01 += 1
-                if datum[3][1] == 0:
-                    n_f_10 += 1
-                if datum[3][1] == 1:
-                    n_f_11 += 1
-                n += 1
-
         mean_reward = tot_reward / n
 
         lb_tot = hoeff_bound(mean_reward, n)
@@ -151,122 +142,118 @@ class SplittingLearner:
         # print(p_00, p_01, p_10, p_11)
 
         if split_0 < 0 and split_1 < 0:
-            #print("No splitting")
-            return [[[0, 0], [0, 1], [1, 0], [1, 1]]], []
+            # print("No splitting")
+            return []
         elif split_0 > split_1:
-            #print("Splitting 0")
+            # print("Splitting 0")
             second_split_00 = self.second_split(model_00, data_00, 1)
             l00 = []
             if second_split_00[0]:
-                c_00 = [[[0, 0]], [[0, 1]]]
+                # c_00 = [[[0, 0]], [[0, 1]]]
                 l00.append(second_split_00[1])
                 l00.append(second_split_00[2])
                 l00[0].feat = [[0, 0]]
                 l00[1].feat = [[0, 1]]
 
             else:
-                c_00 = [[[0, 0], [0, 1]]]
+                # c_00 = [[[0, 0], [0, 1]]]
                 l00.append(learner_00)
                 l00[0].feat = [[0, 0], [0, 1]]
 
             second_split_01 = self.second_split(model_01, data_01, 1)
             l01 = []
             if second_split_01[0]:
-                c_01 = [[[1, 0]], [[1, 1]]]
+                # c_01 = [[[1, 0]], [[1, 1]]]
                 l01.append(second_split_01[1])
                 l01.append(second_split_01[2])
                 l01[0].feat = [[1, 0]]
                 l01[1].feat = [[1, 1]]
             else:
-                c_01 = [[[1, 0], [1, 1]]]
+                # c_01 = [[[1, 0], [1, 1]]]
                 l01.append(learner_01)
                 l01[0].feat = [[1, 0], [1, 1]]
 
-            result = []
             l_result = []
-            result.extend(c_00)
-            result.extend(c_01)
             l_result.extend(l00)
             l_result.extend(l01)
-            return result, l_result
+            return l_result
         else:
-            #print("Splitting 1")
+            # print("Splitting 1")
             second_split_10 = self.second_split(model_10, data_10, 0)
             l10 = []
             if second_split_10[0]:
-                c_10 = [[[0, 0]], [[1, 0]]]
+                # c_10 = [[[0, 0]], [[1, 0]]]
                 l10.append(second_split_10[1])
                 l10.append(second_split_10[2])
                 l10[0].feat = [[0, 0]]
                 l10[1].feat = [[1, 0]]
 
             else:
-                c_10 = [[[0, 0], [1, 0]]]
+                # c_10 = [[[0, 0], [1, 0]]]
                 l10.append(learner_10)
                 l10[0].feat = [[0, 0], [1, 0]]
 
             second_split_11 = self.second_split(model_11, data_11, 0)
             l11 = []
             if second_split_11[0]:
-                c_11 = [[[0, 1]], [[1, 1]]]
+                # c_11 = [[[0, 1]], [[1, 1]]]
                 l11.append(second_split_11[1])
                 l11.append(second_split_11[2])
                 l11[0].feat = [[0, 1]]
                 l11[1].feat = [[1, 1]]
             else:
-                c_11 = [[[0, 1], [1, 1]]]
+                # c_11 = [[[0, 1], [1, 1]]]
                 l11.append(learner_01)
                 l11[0].feat = [[0, 1], [1, 1]]
 
-            result = []
-            result.extend(c_10)
-            result.extend(c_11)
             l_result = []
             l_result.extend(l10)
             l_result.extend(l11)
-            return result, l_result
+            return l_result
 
     def second_split(self, model, data, other_feature):
+
         tot_reward = 0
         n = 0
         n_f_0 = 0
         n_f_1 = 0
-        for datum in data:
-            n += 1
-            tot_reward += np.sum(datum[0])
-            if datum[3][other_feature] == 0:
-                n_f_0 += 1
-            if datum[3][other_feature] == 1:
-                n_f_1 += 1
-
-        mean_reward = tot_reward / n
-
-        data_0 = []
-        data_1 = []
-        for datum in data:
-            if datum[3][0] == 0:
-                data_0.append(datum)
-            else:
-                data_1.append(datum)
 
         model_0 = model.copy()
         model_1 = model.copy()
         learner_0 = UCBLearner2(model_0)
         learner_1 = UCBLearner2(model_1)
 
-        for datum in data_0:
-            cr_data = conv_data([datum])
-            ar_data = alpha_data([datum])
-            q_data = quantity_data([datum])
-            pulled_arm = datum[7]
+        data_0 = []
+        data_1 = []
+        for day in data:
+            day_0 = []
+            day_1 = []
+            for cust in day:
+                n += 1
+                tot_reward += np.sum(cust[0])
+                if cust[3][other_feature] == 0:
+                    n_f_0 += 1
+                    day_0.append(cust)
+                if cust[3][other_feature] == 1:
+                    n_f_1 += 1
+                    day_1.append(cust)
+
+            cr_data = conv_data(day_0)
+            ar_data = alpha_data(day_0)
+            q_data = quantity_data(day_0)
+            pulled_arm = day_0[0][7]
             learner_0.update(pulled_arm, cr_data, ar_data, q_data)
 
-        for datum in data_1:
-            cr_data = conv_data([datum])
-            ar_data = alpha_data([datum])
-            q_data = quantity_data([datum])
-            pulled_arm = datum[7]
+            cr_data = conv_data(day_1)
+            ar_data = alpha_data(day_1)
+            q_data = quantity_data(day_1)
+            pulled_arm = day_1[0][7]
             learner_1.update(pulled_arm, cr_data, ar_data, q_data)
+
+            data_0.extend(day_0)
+            data_1.extend(day_1)
+
+        mean_reward = tot_reward / n
 
         arm_0 = learner_0.act()
         arm_1 = learner_1.act()

@@ -13,6 +13,8 @@ def main():
     n_exp = 2
     daily_user = 200
 
+    all_features = [[0, 0], [0, 1], [1, 0], [1, 1]]
+
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
 
@@ -35,7 +37,7 @@ def main():
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day_split(daily_user, alpha_ratio, [pulled_arm for _ in range(4)],
-                                               [[0, 0], [0, 1], [1, 0], [1, 1]])
+                                               all_features)
             alldata.append(data)
             cr_data = conv_data(data)
             ar_data = alpha_data(data)
@@ -52,11 +54,11 @@ def main():
             instant_regret_obs[i].append(optimal_reward - obs_reward)
             instant_reward_obs[i].append(obs_reward)
 
+        learner.feat = all_features
+        learners = split_learner.first_split(model.copy(), alldata.copy())
 
-        learner.feat = [[0, 0], [0, 1], [1, 0], [1, 1]]
-        split, learners = split_learner.first_split(model.copy(), alldata.copy())
-        for class_f in split:
-            print(class_f)
+        for ler in learners:
+            print(ler.feat)
         if learners == []:
             learners = [learner]
 
@@ -65,32 +67,46 @@ def main():
             for ii in range(len(learners)):
                 pulled_arms.append(learners[ii].act())
             pulled_arm = []
-            for features in [[0, 0], [0, 1], [1, 0], [1, 1]]:
+            for features in all_features:
                 for jj in range(len(learners)):
                     if features in learners[jj].feat:
                         pulled_arm.append(pulled_arms[jj])
 
             alpha_ratio = env1.alpha_ratio_otd()
             data = env1.round_single_day_split(daily_user, alpha_ratio, pulled_arm,
-                                               [[0, 0], [0, 1], [1, 0], [1, 1]])
+                                               all_features)
 
             alldata.append(data)
 
             # run base learner
-            pulled_arm_base = learner.act()
-            alldata.append(data)
-            cr_data = conv_data(data)
-            ar_data = alpha_data(data)
-            q_data = quantity_data(data)
-            learner.update(pulled_arm_base, cr_data, ar_data, q_data)
-
+            # day_0_0 = customers with feature [0,0] ...
+            day_0_0 = []
+            day_0_1 = []
+            day_1_0 = []
+            day_1_1 = []
             for cust in data:
+                if cust[3] == [0, 0]:
+                    day_0_0.append(cust)
+                elif cust[3] == [0, 1]:
+                    day_0_1.append(cust)
+                elif cust[3] == [1, 0]:
+                    day_1_0.append(cust)
+                else:
+                    day_1_1.append(cust)
+
+            day_tot = {0: day_0_0,
+                       1: day_0_1,
+                       2: day_1_0,
+                       3: day_1_1,
+                       }
+            for feat in all_features:
+                cr_data = conv_data(day_tot[all_features.index(feat)])
+                ar_data = alpha_data(day_tot[all_features.index(feat)])
+                q_data = quantity_data(day_tot[all_features.index(feat)])
+                learner.update(day_tot[all_features.index(feat)][0][7], cr_data, ar_data, q_data)
                 for ler in learners:
-                    if cust[3] in ler.feat:
-                        cr_data = conv_data([cust])
-                        ar_data = alpha_data([cust])
-                        q_data = quantity_data([cust])
-                        ler.update(cust[7], cr_data, ar_data, q_data)
+                    if feat in ler.feat:
+                        ler.update(day_tot[all_features.index(feat)][0][7], cr_data, ar_data, q_data)
 
             obs_reward = 0
             if len(data):
@@ -103,9 +119,9 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
             if t % 14 == 0 and t > 0:
-                split, learners = split_learner.first_split(model.copy(), alldata.copy())
-                for class_f in split:
-                    print(class_f)
+                learners = split_learner.first_split(model.copy(), alldata.copy())
+                for ler in learners:
+                    print(ler.feat)
                 if learners == []:
                     learners = [learner]
 
