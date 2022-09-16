@@ -9,8 +9,8 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 90
-    n_exp = 40
+    T = 200
+    n_exp = 1
     daily_user = 200
 
     all_features = [[0, 0], [0, 1], [1, 0], [1, 1]]
@@ -55,7 +55,7 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
         learner.feat = all_features
-        learners = split_learner.first_split(model.copy(), alldata.copy())
+        learners = split_learner.first_split(model.copy(), alldata.copy(), learner.model.copy())
 
         for ler in learners:
             print(ler.feat)
@@ -119,7 +119,7 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
             if t % 14 == 0 and t > 0:
-                learners = split_learner.first_split(model.copy(), alldata.copy())
+                learners = split_learner.first_split(model.copy(), alldata.copy(), learner.model.copy())
                 for ler in learners:
                     print(ler.feat)
                 if learners == []:

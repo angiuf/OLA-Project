@@ -4,11 +4,11 @@ import matplotlib.pyplot as plt
 
 # function that generates a standard environment and returns the aggregated model and class probability
 def generate_environment():
-    average = np.array([[7, 10, 10],
-                        [2.5, 3, 3.5],
-                        [3.5, 5, 5],
-                        [2, 4, 3],
-                        [1.5, 2.5, 2.5]])
+    average = np.array([[7, 10, 8],
+                        [2.5, 3, 4],
+                        [3.5, 5, 6],
+                        [2, 4, 2],
+                        [1.5, 2.5, 4]])
     variance = np.array([[1, 1, 1],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5],
