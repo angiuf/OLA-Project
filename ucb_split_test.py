@@ -4,8 +4,7 @@ from Source.Auxiliary import *
 from tqdm import trange
 
 # TODO: implement all the algorithms with not fully connected click probability graph
-# TODO: implement different alphas for different classes
-# TODO: check splitting condition (always splitting)
+# TODO: check different alphas for different classes
 # TODO: report
 
 def main():
@@ -19,14 +18,27 @@ def main():
 
     all_features = [[0, 0], [0, 1], [1, 0], [1, 1]]
 
-    optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
-    print("Optimal_arm: ", optimal_arm)
+    optimal_reward = 0
+    optimal_reward_c = np.zeros(3)
 
-    optimal_act_rate = mc_simulation(model, real_conv_rates[range(5), optimal_arm], 5, 10000)
+    for c in range(3):
+        env_c, model_c = generate_environment_class(c)
+        real_conv_rates_c = model_c["real_conversion_rates"]
+        prices_c = model_c["prices"]
 
-    optimal_reward = return_reward(model, prices[range(5), optimal_arm], real_conv_rates[range(5), optimal_arm],
-                                   optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
-    print("Optimal reward: ", optimal_reward)
+        optimal_arm_c = optimization_algorithm(model_c, False)  # pull the optimal arm
+        print("Optimal_arm of class ", c, " : ", optimal_arm_c)
+
+        optimal_act_rate_c = mc_simulation(model_c, real_conv_rates_c[range(5), optimal_arm_c], 5, 10000)
+
+        optimal_reward_c[c] = return_reward(model_c, prices_c[range(5), optimal_arm_c], real_conv_rates_c[range(5), optimal_arm_c],
+                                       optimal_act_rate_c, model_c['real_alpha_ratio'], model_c['real_quantity'])
+        print("Optimal reward of class ", c, " : ", optimal_reward_c[c])
+
+        optimal_reward += optimal_reward_c[c] * model["class_probability"][c]
+
+    print("\nOptimal reward: ", optimal_reward)
+
 
     learner = UCBLearner2(model.copy())
     instant_regret_obs = [[] for _ in range(n_exp)]

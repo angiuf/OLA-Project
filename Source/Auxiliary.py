@@ -2,8 +2,124 @@ from Source.NonStationaryEnvironment import *
 import matplotlib.pyplot as plt
 
 
+
 # function that generates a standard environment and returns the aggregated model and class probability
 def generate_environment():
+    average = np.array([[7, 10, 10],
+                        [2.5, 3, 3.5],
+                        [3.5, 5, 5],
+                        [2, 4, 3],
+                        [1.5, 2.5, 2.5]])
+    variance = np.array([[1, 1, 1],
+                         [0.5, 0.5, 0.5],
+                         [0.5, 0.5, 0.5],
+                         [0.5, 0.5, 0.5],
+                         [0.5, 0.5, 0.5]])
+    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
+    costs = np.array([1.6, 0.6, 1, 0.8, 0.4])
+    class_probability = np.array([0.4, 0.2, 0.4])
+    lambdas = np.array([1, 2, 3])
+    alphas_par = np.array([[5, 3, 2, 1, 3, 1],
+                          [5, 2, 1, 5, 1, 1],
+                          [5, 1, 3, 1, 1, 2]])
+    np.random.seed(6)
+    P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
+    secondary_products = np.array([[1, 4],
+                                   [0, 2],
+                                   [3, 0],
+                                   [2, 4],
+                                   [0, 1]])
+
+    env1 = EnvironmentPricing(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                              class_probability,
+                              lambda_secondary=0.5)
+
+    real_conv_rates = np.zeros((5, 4))
+    real_alphas_par = np.zeros(6)
+
+    for i in range(3):
+        real_conv_rates += env1.get_real_conversion_rates(i) * class_probability[i]
+        real_alphas_par += alphas_par[i,:] * class_probability[i]
+
+    model = {"n_prod": 5,
+             "n_price": 4,
+             "prices": prices,
+             "cost": costs,
+             #"real_alphas": alphas_par
+             "real_alpha_ratio": real_alphas_par / np.sum(real_alphas_par),
+             "real_conversion_rates": real_conv_rates,
+             "real_quantity": 3,
+             "secondary_products": secondary_products,
+             "real_P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
+                       class_probability[2],
+             "lambda_secondary": 0.5,
+             "daily_user": 1000,
+             "class_probability": class_probability
+             }
+    return env1, model
+
+
+# This function given a time horizon returns the non stationary environment with the aggregated model and class, probability
+def generate_environment_non_stat(horizon):
+    average = np.array([[[7, 9, 10], [4, 4, 3.5], [4, 4, 5], [4, 3.5, 5], [1.5, 2, 2]],
+                        [[6, 8, 9], [1.5, 2, 2], [3, 3, 4], [2, 2.5, 2.5], [1, 1.5, 1]],
+                        [[8, 11, 11.5], [2, 3, 3], [5, 5.5, 6.5], [3, 3, 3.5], [2, 2, 2]]])
+
+    variance = np.array([[[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
+                         [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
+                         [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]])
+
+    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
+
+    costs = np.array([0.8, 0.3, 0.5, 0.4, 0.2])
+
+    class_probability = np.array([0.5, 0.3, 0.2])
+
+    lambdas = np.array([1, 2, 3])
+
+    alphas_par = np.array([[5, 3, 2, 1, 3, 1],
+                          [5, 2, 1, 5, 1, 1],
+                          [5, 1, 3, 1, 1, 2]])
+
+    np.random.seed(5)
+    P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
+
+    secondary_products = np.array([[1, 4],
+                                   [0, 2],
+                                   [3, 0],
+                                   [2, 4],
+                                   [0, 1]])
+
+    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
+                                    class_probability,
+                                    lambda_secondary=0.5, horizon=horizon)
+
+    real_conv_rates = np.zeros((3, 5, 4))
+    real_alphas_par = np.zeros(6)
+
+    for i in range(3):
+        for j in range(3):
+            real_conv_rates[i] += env2.get_real_conversion_rates(j, i) * class_probability[j]
+        real_alphas_par += alphas_par[i, :] * class_probability[i]
+
+    model = {"n_prod": 5,
+             "n_price": 4,
+             "n_phase": average.shape[0],
+             "prices": prices,
+             "cost": costs,
+             "real_alphas": real_alphas_par,
+             "real_alpha_ratio": real_alphas_par / np.sum(real_alphas_par),
+             "real_conversion_rates": real_conv_rates,
+             "real_quantity": 3,
+             "secondary_products": secondary_products,
+             "real_P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
+                       class_probability[2],
+             "lambda_secondary": 0.5,
+             "daily_user": 1000
+             }
+    return env2, model
+
+def generate_environment_class(c):
     average = np.array([[7, 10, 10],
                         [2.5, 3, 3.5],
                         [3.5, 5, 5],
@@ -33,8 +149,7 @@ def generate_environment():
 
     real_conv_rates = np.zeros((5, 4))
 
-    for i in range(3):
-        real_conv_rates += env1.get_real_conversion_rates(i) * class_probability[i]
+    real_conv_rates += env1.get_real_conversion_rates(c)
 
     model = {"n_prod": 5,
              "n_price": 4,
@@ -43,71 +158,13 @@ def generate_environment():
              "real_alphas": alphas_par,
              "real_alpha_ratio": alphas_par / np.sum(alphas_par),
              "real_conversion_rates": real_conv_rates,
-             "real_quantity": 3,
+             "real_quantity": lambdas[c] + 1,
              "secondary_products": secondary_products,
-             "real_P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
-                       class_probability[2],
+             "real_P": P[:, :, c],
              "lambda_secondary": 0.5,
              "daily_user": 1000
              }
     return env1, model
-
-
-# This function given a time horizon returns the non stationary environment with the aggregated model and class, probability
-def generate_environment_non_stat(horizon):
-    average = np.array([[[7, 9, 10], [4, 4, 3.5], [4, 4, 5], [4, 3.5, 5], [1.5, 2, 2]],
-                        [[6, 8, 9], [1.5, 2, 2], [3, 3, 4], [2, 2.5, 2.5], [1, 1.5, 1]],
-                        [[8, 11, 11.5], [2, 3, 3], [5, 5.5, 6.5], [3, 3, 3.5], [2, 2, 2]]])
-
-    variance = np.array([[[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-                         [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-                         [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]])
-
-    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
-
-    costs = np.array([0.8, 0.3, 0.5, 0.4, 0.2])
-
-    class_probability = np.array([0.5, 0.3, 0.2])
-
-    lambdas = np.array([1, 2, 3])
-
-    alphas_par = np.array([5, 1, 1, 1, 1, 1])
-
-    np.random.seed(5)
-    P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
-
-    secondary_products = np.array([[1, 4],
-                                   [0, 2],
-                                   [3, 0],
-                                   [2, 4],
-                                   [0, 1]])
-
-    env2 = NonStationaryEnvironment(average, variance, prices, costs, lambdas, alphas_par, P, secondary_products,
-                                    class_probability,
-                                    lambda_secondary=0.5, horizon=horizon)
-
-    real_conv_rates = np.zeros((3, 5, 4))
-
-    for i in range(3):
-        for j in range(3):
-            real_conv_rates[i] += env2.get_real_conversion_rates(j, i) * class_probability[j]
-
-    model = {"n_prod": 5,
-             "n_price": 4,
-             "n_phase": average.shape[0],
-             "prices": prices,
-             "cost": costs,
-             "real_alphas": alphas_par,
-             "real_alpha_ratio": alphas_par / np.sum(alphas_par),
-             "real_conversion_rates": real_conv_rates,
-             "real_quantity": 3,
-             "secondary_products": secondary_products,
-             "real_P": P[:, :, 0] * class_probability[0] + P[:, :, 1] * class_probability[1] + P[:, :, 2] *
-                       class_probability[2],
-             "lambda_secondary": 0.5,
-             "daily_user": 1000
-             }
-    return env2, model
 
 
 # given the average prices this function  returns a matrix with all the possible prices for each product
