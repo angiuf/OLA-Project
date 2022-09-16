@@ -10,7 +10,7 @@ def split(p0, p1, lb0, lb1, lb_tot):  # p are the class probabilities,
     # lb are the lower bounds for aggregated and the split
     return (p0 * lb0 + p1 * lb1) - lb_tot
 
-def first_split(model, data, ucb_learner):
+def first_split(model, data, ucb_learner, learner_model):
     # The first number indicate the feature, and the second feature indicate its value. So, for example,
     # 00 refers to the case when the first feature is 0.
 
@@ -30,7 +30,6 @@ def first_split(model, data, ucb_learner):
         learner_10 = TSLearner2(model_10)
         learner_11 = TSLearner2(model_11)
 
-    tot_reward = 0
     n = 0
     n_f_00 = 0
     n_f_01 = 0
@@ -48,7 +47,6 @@ def first_split(model, data, ucb_learner):
         day_10 = []
         day_11 = []
         for cust in day:
-            tot_reward += np.sum(cust[0])
             n += 1
             if cust[3][0] == 0:
                 day_00.append(cust)
@@ -93,10 +91,28 @@ def first_split(model, data, ucb_learner):
         data_10.append(day_10)
         data_11.append(day_11)
 
-    arm_00 = learner_00.act()
-    arm_01 = learner_01.act()
-    arm_10 = learner_10.act()
-    arm_11 = learner_11.act()
+    # arm_00 = learner_00.act()
+    # arm_01 = learner_01.act()
+    # arm_10 = learner_10.act()
+    # arm_11 = learner_11.act()
+
+
+    arm_ = optimization_algorithm(learner_model, False, rates="cr_means", alphas="alpha_means",
+                                  quantity="quantity_mean")
+    arm_00 = optimization_algorithm(model_00, False, rates="cr_means", alphas="alpha_means",
+                                    quantity="quantity_mean")
+    arm_01 = optimization_algorithm(model_01, False, rates="cr_means", alphas="alpha_means",
+                                    quantity="quantity_mean")
+    arm_10 = optimization_algorithm(model_10, False, rates="cr_means", alphas="alpha_means",
+                                    quantity="quantity_mean")
+    arm_11 = optimization_algorithm(model_11, False, rates="cr_means", alphas="alpha_means",
+                                    quantity="quantity_mean")
+
+    act_rate_ = mc_simulation(learner_model, [learner_model['cr_means'][i][arm_[i]] for i in range(5)], 5)
+
+    mu_ = return_reward(learner_model, [learner_model['prices'][i][arm_[i]] for i in range(5)],
+                        [learner_model['cr_means'][i][arm_[i]] for i in range(5)], act_rate_,
+                        learner_model['alpha_means'], learner_model['quantity_mean'])
 
     act_rate_00 = mc_simulation(model_00, [model_00['cr_means'][i][arm_00[i]] for i in range(5)], 5)
 
@@ -122,14 +138,12 @@ def first_split(model, data, ucb_learner):
                           [model_11['cr_means'][i][arm_11[i]] for i in range(5)], act_rate_11,
                           model_11['alpha_means'], model_11['quantity_mean'])
 
-    mean_reward = tot_reward / n
+    lb_tot = hoeff_bound_l(mu_, n)
 
-    lb_tot = hoeff_bound(mean_reward, n)
-
-    lb_00 = hoeff_bound(mu_00, n_f_00)
-    lb_01 = hoeff_bound(mu_01, n_f_01)
-    lb_10 = hoeff_bound(mu_10, n_f_10)
-    lb_11 = hoeff_bound(mu_11, n_f_11)
+    lb_00 = hoeff_bound_l(mu_00, n_f_00)
+    lb_01 = hoeff_bound_l(mu_01, n_f_01)
+    lb_10 = hoeff_bound_l(mu_10, n_f_10)
+    lb_11 = hoeff_bound_l(mu_11, n_f_11)
 
     p_00 = hoeff_bound(n_f_00 / n, n_f_00)
     p_01 = hoeff_bound(n_f_01 / n, n_f_01)
@@ -141,8 +155,9 @@ def first_split(model, data, ucb_learner):
     # Evaluate the splitting condition for the second feature
     split_1 = split(p_10, p_11, lb_10, lb_11, lb_tot)
 
+    # print(arm_00, arm_01, arm_10, arm_11)
     # print(split_0, split_1)
-    # print(mean_reward, mu_00, mu_01, mu_10, mu_11)
+    # print(mu_00, mu_01, mu_10, mu_11, mu_)
     # print(lb_tot, lb_00, lb_01, lb_10, lb_11)
     # print(p_00, p_01, p_10, p_11)
 
@@ -151,7 +166,7 @@ def first_split(model, data, ucb_learner):
         return []
     elif split_0 > split_1:
         # print("Splitting 0")
-        second_split_00 = second_split(model_00, data_00, 1, ucb_learner)
+        second_split_00 = second_split(model_00, data_00, 1, ucb_learner, mu_00)
         l00 = []
         if second_split_00[0]:
             # c_00 = [[[0, 0]], [[0, 1]]]
@@ -159,13 +174,12 @@ def first_split(model, data, ucb_learner):
             l00.append(second_split_00[2])
             l00[0].feat = [[0, 0]]
             l00[1].feat = [[0, 1]]
-
         else:
             # c_00 = [[[0, 0], [0, 1]]]
             l00.append(learner_00)
             l00[0].feat = [[0, 0], [0, 1]]
 
-        second_split_01 = second_split(model_01, data_01, 1, ucb_learner)
+        second_split_01 =  second_split(model_01, data_01, 1, ucb_learner, mu_01)
         l01 = []
         if second_split_01[0]:
             # c_01 = [[[1, 0]], [[1, 1]]]
@@ -182,9 +196,10 @@ def first_split(model, data, ucb_learner):
         l_result.extend(l00)
         l_result.extend(l01)
         return l_result
+
     else:
         # print("Splitting 1")
-        second_split_10 = second_split(model_10, data_10, 0, ucb_learner)
+        second_split_10 =  second_split(model_10, data_10, 0, ucb_learner, mu_10)
         l10 = []
         if second_split_10[0]:
             # c_10 = [[[0, 0]], [[1, 0]]]
@@ -192,13 +207,12 @@ def first_split(model, data, ucb_learner):
             l10.append(second_split_10[2])
             l10[0].feat = [[0, 0]]
             l10[1].feat = [[1, 0]]
-
         else:
             # c_10 = [[[0, 0], [1, 0]]]
             l10.append(learner_10)
             l10[0].feat = [[0, 0], [1, 0]]
 
-        second_split_11 = second_split(model_11, data_11, 0, ucb_learner)
+        second_split_11 =  second_split(model_11, data_11, 0, ucb_learner, mu_11)
         l11 = []
         if second_split_11[0]:
             # c_11 = [[[0, 1]], [[1, 1]]]
@@ -216,9 +230,7 @@ def first_split(model, data, ucb_learner):
         l_result.extend(l11)
         return l_result
 
-def second_split(model, data, other_feature, ucb_learner):
-
-    tot_reward = 0
+def second_split(model, data, other_feature, ucb_learner, mu):
     n = 0
     n_f_0 = 0
     n_f_1 = 0
@@ -239,7 +251,6 @@ def second_split(model, data, other_feature, ucb_learner):
         day_1 = []
         for cust in day:
             n += 1
-            tot_reward += np.sum(cust[0])
             if cust[3][other_feature] == 0:
                 n_f_0 += 1
                 day_0.append(cust)
@@ -262,10 +273,13 @@ def second_split(model, data, other_feature, ucb_learner):
         data_0.extend(day_0)
         data_1.extend(day_1)
 
-    mean_reward = tot_reward / n
+    # arm_0 = learner_0.act()
+    # arm_1 = learner_1.act()
 
-    arm_0 = learner_0.act()
-    arm_1 = learner_1.act()
+    arm_0 = optimization_algorithm(model_0, False, rates="cr_means", alphas="alpha_means",
+                                   quantity="quantity_mean")
+    arm_1 = optimization_algorithm(model_1, False, rates="cr_means", alphas="alpha_means",
+                                   quantity="quantity_mean")
 
     act_rate_0 = mc_simulation(model_0, [model_0['cr_means'][i][arm_0[i]] for i in range(5)], 5)
 
@@ -279,15 +293,15 @@ def second_split(model, data, other_feature, ucb_learner):
                          [model_1['cr_means'][i][arm_1[i]] for i in range(5)], act_rate_1,
                          model_1['alpha_means'], model_1['quantity_mean'])
 
-    lb_tot = hoeff_bound(mean_reward, n)
+    lb_tot = hoeff_bound_l(mu, n)
 
-    lb_0 = hoeff_bound(mu_0, n_f_0)
-    lb_1 = hoeff_bound(mu_1, n_f_1)
+    lb_0 = hoeff_bound_l(mu_0, n_f_0)
+    lb_1 = hoeff_bound_l(mu_1, n_f_1)
 
     p_0 = hoeff_bound(n_f_0 / n, n_f_0)
     p_1 = hoeff_bound(n_f_1 / n, n_f_1)
 
-    split_ = split(p_0, p_1, lb_0, lb_1, lb_tot)
+    split_ =  split(p_0, p_1, lb_0, lb_1, lb_tot)
 
     if split_ > 0:
         return [True, learner_0, learner_1]
@@ -295,8 +309,12 @@ def second_split(model, data, other_feature, ucb_learner):
         return [False]
 
 
-def hoeff_bound(mean, n_z, conf=0.90):
+def hoeff_bound(mean, n_z, conf=0.05):
     return mean - np.sqrt(-np.log(conf) / (2 * n_z))
+
+
+def hoeff_bound_l(mean, n_z, conf=0.05):
+    return mean - np.sqrt(-np.log(conf) / (2 * n_z) * 20 ** 2)
 
 
 def clt_bound(mean, var, n):

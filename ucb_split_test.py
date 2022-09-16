@@ -58,7 +58,7 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
         learner.feat = all_features
-        learners = first_split(model.copy(), alldata.copy(), True)
+        learners = first_split(model.copy(), alldata.copy(), True, learner.model.copy())
 
         for ler in learners:
             print(ler.feat)
@@ -122,7 +122,7 @@ def main():
             instant_reward_obs[i].append(obs_reward)
 
             if t % 14 == 0 and t > 0:
-                learners = first_split(model.copy(), alldata.copy(), True)
+                learners = first_split(model.copy(), alldata.copy(), True, learner.model.copy())
                 for ler in learners:
                     print(ler.feat)
                 if learners == []:
@@ -130,8 +130,8 @@ def main():
 
         learner.reset()
 
-    show_results(instant_regret_obs, "UCB test, second case: regret")
-    show_reward(instant_reward_obs, "UCB test, second case: reward")
+    show_results(instant_regret_obs, "UCB test, split case: regret")
+    show_reward(instant_reward_obs, "UCB test, split case: reward")
 
 
 main()
