@@ -2,9 +2,23 @@ from Source.UCBLearner3 import *
 from Source.Auxiliary import *
 from tqdm import trange
 
-
 def main():
-    env1, model = generate_environment()
+    fully_i_regret, fully_i_reward = run()
+    not_fully_i_regret, not_fully_i_reward = run(False)
+
+    plt.figure(1, (16,9))
+    plt.suptitle("UCB test, third case")
+
+    show_results(fully_i_regret, "Fully connected: regret", 221)
+    show_results(not_fully_i_regret, "Not fully connected: regret", 222)
+    show_reward(fully_i_reward, "Fully connected: reward", 223)
+    show_reward(not_fully_i_reward, "Not fully connected: reward", 224)
+
+    plt.show()
+
+
+def run(f_c=True):
+    env1, model = generate_environment(f_c)
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
@@ -48,8 +62,7 @@ def main():
 
         learner.reset()
 
-    show_results(instant_regret_obs, "UCB test, third case: regret")
-    show_reward(instant_reward_obs, "UCB test, third case: reward")
+    return instant_regret_obs, instant_reward_obs
 
 
 

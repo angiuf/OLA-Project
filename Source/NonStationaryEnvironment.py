@@ -24,7 +24,7 @@ class NonStationaryEnvironment(EnvironmentPricing):
         seen_primary = np.full(shape=5, fill_value=False)
         extracted_class = np.random.choice(a=[0, 1, 2], p=class_probability)
         current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
-                                           p=alpha_ratio)  # CASE -1: the customer goes to a competitor
+                                           p=alpha_ratio[extracted_class,:])  # CASE -1: the customer goes to a competitor
 
         number_objects = [0 for _ in range(5)]
         reward_per_object = [0 for _ in range(5)]
