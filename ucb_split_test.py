@@ -4,7 +4,6 @@ from Source.Auxiliary import *
 from tqdm import trange
 
 # TODO: implement all the algorithms with not fully connected click probability graph
-# TODO: check different alphas for different classes
 # TODO: report
 
 def main():
@@ -22,7 +21,7 @@ def main():
     optimal_reward_c = np.zeros(3)
 
     for c in range(3):
-        env_c, model_c = generate_environment_class(c)
+        env_c, model_c = generate_environment_class(c, model['real_alphas'][c])
         real_conv_rates_c = model_c["real_conversion_rates"]
         prices_c = model_c["prices"]
 

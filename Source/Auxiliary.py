@@ -2,28 +2,36 @@ from Source.NonStationaryEnvironment import *
 import matplotlib.pyplot as plt
 
 
-
 # function that generates a standard environment and returns the aggregated model and class probability
-def generate_environment():
-    average = np.array([[7, 10, 10],
-                        [2.5, 3, 3.5],
-                        [3.5, 5, 5],
-                        [2, 4, 3],
-                        [1.5, 2.5, 2.5]])
-    variance = np.array([[1, 1, 1],
-                         [0.5, 0.5, 0.5],
-                         [0.5, 0.5, 0.5],
-                         [0.5, 0.5, 0.5],
-                         [0.5, 0.5, 0.5]])
-    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
-    costs = np.array([1.6, 0.6, 1, 0.8, 0.4])
-    class_probability = np.array([0.4, 0.2, 0.4])
-    lambdas = np.array([1, 2, 3])
-    alphas_par = np.array([[5, 3, 2, 1, 3, 1],
-                          [5, 2, 1, 5, 1, 1],
-                          [5, 1, 3, 1, 1, 2]])
+def generate_environment(f_c=True):
+    average = np.array([[10, 9, 7.5],
+                        [3, 3, 2],
+                        [5, 4, 3],
+                        [4, 3, 4],
+                        [2.5, 2, 2.5]])
     np.random.seed(6)
+    variance = np.random.uniform(0.5, 1, size=(5, 3))
+    prices = generate_prices(np.array([8, 3, 4, 3, 2]))
+    costs = np.array([1.6, 0.6, 0.8, 0.6, 0.4])
+    class_probability = np.array([0.4, 0.2, 0.4])
+    lambdas = np.array([2, 1, 1])
+    alphas_par = np.array([[5, 3, 2, 1, 3, 1],
+                           [5, 2, 1, 5, 1, 1],
+                           [5, 1, 3, 1, 1, 2]])
+    np.random.seed(5)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
+    if not f_c:
+        P[0, 1, 0] = 0
+        P[2, 3, 0] = 0
+        P[3, 2, 0] = 0
+
+        P[0, 4, 1] = 0
+        P[2, 0, 1] = 0
+
+        P[1, 2, 2] = 0
+        P[3, 4, 2] = 0
+        P[4, 1, 2] = 0
+
     secondary_products = np.array([[1, 4],
                                    [0, 2],
                                    [3, 0],
@@ -39,13 +47,13 @@ def generate_environment():
 
     for i in range(3):
         real_conv_rates += env1.get_real_conversion_rates(i) * class_probability[i]
-        real_alphas_par += alphas_par[i,:] * class_probability[i]
+        real_alphas_par += alphas_par[i, :] * class_probability[i]
 
     model = {"n_prod": 5,
              "n_price": 4,
              "prices": prices,
              "cost": costs,
-             #"real_alphas": alphas_par
+             "real_alphas": alphas_par,
              "real_alpha_ratio": real_alphas_par / np.sum(real_alphas_par),
              "real_conversion_rates": real_conv_rates,
              "real_quantity": 3,
@@ -60,29 +68,38 @@ def generate_environment():
 
 
 # This function given a time horizon returns the non stationary environment with the aggregated model and class, probability
-def generate_environment_non_stat(horizon):
-    average = np.array([[[7, 9, 10], [4, 4, 3.5], [4, 4, 5], [4, 3.5, 5], [1.5, 2, 2]],
-                        [[6, 8, 9], [1.5, 2, 2], [3, 3, 4], [2, 2.5, 2.5], [1, 1.5, 1]],
-                        [[8, 11, 11.5], [2, 3, 3], [5, 5.5, 6.5], [3, 3, 3.5], [2, 2, 2]]])
+def generate_environment_non_stat(horizon, f_c=True):
+    average = np.array([[[10, 9, 7.5], [3, 3, 2], [5, 4, 3], [4, 3, 4], [2.5, 2, 2.5]],
+                        [[9, 8, 6], [2.5, 2, 2], [4, 3, 2.5], [4, 3, 3.5], [1.5, 2, 2]],
+                        [[11, 10, 8.5], [4, 3.5, 3.5], [6, 5.5, 6], [5, 3, 4], [3, 2.5, 2]]])
+    np.random.seed(42)
+    variance = np.random.uniform(0.5, 1, size=(3, 5, 3))
 
-    variance = np.array([[[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-                         [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-                         [[1, 1, 1], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]])
+    prices = generate_prices(np.array([8, 3, 4, 3, 2]))
 
-    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
+    costs = np.array([1.6, 0.6, 0.8, 0.6, 0.4])
 
-    costs = np.array([0.8, 0.3, 0.5, 0.4, 0.2])
+    class_probability = np.array([0.4, 0.2, 0.4])
 
-    class_probability = np.array([0.5, 0.3, 0.2])
-
-    lambdas = np.array([1, 2, 3])
+    lambdas = np.array([2, 1, 1])
 
     alphas_par = np.array([[5, 3, 2, 1, 3, 1],
-                          [5, 2, 1, 5, 1, 1],
-                          [5, 1, 3, 1, 1, 2]])
+                           [5, 2, 1, 5, 1, 1],
+                           [5, 1, 3, 1, 1, 2]])
 
     np.random.seed(5)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
+    if not f_c:
+        P[0, 1, 0] = 0
+        P[2, 3, 0] = 0
+        P[3, 2, 0] = 0
+
+        P[0, 4, 1] = 0
+        P[2, 0, 1] = 0
+
+        P[1, 2, 2] = 0
+        P[3, 4, 2] = 0
+        P[4, 1, 2] = 0
 
     secondary_products = np.array([[1, 4],
                                    [0, 2],
@@ -119,24 +136,35 @@ def generate_environment_non_stat(horizon):
              }
     return env2, model
 
-def generate_environment_class(c):
-    average = np.array([[7, 10, 10],
-                        [2.5, 3, 3.5],
-                        [3.5, 5, 5],
-                        [2, 4, 3],
-                        [1.5, 2.5, 2.5]])
-    variance = np.array([[1, 1, 1],
-                         [0.5, 0.5, 0.5],
-                         [0.5, 0.5, 0.5],
-                         [0.5, 0.5, 0.5],
-                         [0.5, 0.5, 0.5]])
-    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
-    costs = np.array([1.6, 0.6, 1, 0.8, 0.4])
-    class_probability = np.array([0.4, 0.2, 0.4])
-    lambdas = np.array([1, 2, 3])
-    alphas_par = np.array([5, 1, 1, 1, 1, 1])
+
+def generate_environment_class(c, alphas, f_c=True):
+    average = np.array([[10, 9, 7.5],
+                        [3, 3, 2],
+                        [5, 4, 3],
+                        [4, 3, 4],
+                        [2.5, 2, 2.5]])
     np.random.seed(6)
+    variance = np.random.uniform(0.5, 1, size=(5, 3))
+    prices = generate_prices(np.array([8, 3, 4, 3, 2]))
+    costs = np.array([1.6, 0.6, 0.8, 0.6, 0.4])
+    class_probability = np.array([0.4, 0.2, 0.4])
+    lambdas = np.array([2, 1, 1])
+
+    alphas_par = alphas
+    np.random.seed(5)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
+    if not f_c:
+        P[0, 1, 0] = 0
+        P[2, 3, 0] = 0
+        P[3, 2, 0] = 0
+
+        P[0, 4, 1] = 0
+        P[2, 0, 1] = 0
+
+        P[1, 2, 2] = 0
+        P[3, 4, 2] = 0
+        P[4, 1, 2] = 0
+
     secondary_products = np.array([[1, 4],
                                    [0, 2],
                                    [3, 0],
@@ -263,8 +291,8 @@ def show_results(collected_data, title=""):
 
     plt.plot(cumulative_collected_data, color='C3', label='Observed')
     plt.fill_between(range(len(cumulative_collected_data)),
-                     cumulative_collected_data - 2*cumulative_collected_data_std,
-                     cumulative_collected_data + 2*cumulative_collected_data_std, alpha=0.2)
+                     cumulative_collected_data - 2 * cumulative_collected_data_std,
+                     cumulative_collected_data + 2 * cumulative_collected_data_std, alpha=0.2)
     plt.title(title)
     plt.legend()
     plt.show()

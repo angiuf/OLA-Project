@@ -5,12 +5,12 @@ from Source.Save_Load import *
 
 
 def main():
-    env1, model = generate_environment()
+    env1, model = generate_environment(f_c=False)
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 120
-    n_exp = 100
+    T = 20
+    n_exp = 1
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
