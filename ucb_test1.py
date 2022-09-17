@@ -9,8 +9,8 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 20
-    n_exp = 1
+    T = 180
+    n_exp = 100
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
@@ -50,7 +50,7 @@ def main():
     show_results(instant_regret_obs, "UCB test, first case: regret")
     show_reward(instant_reward_obs, "UCB test, first case: reward")
 
-    # data = MyClass([instant_regret_obs, instant_reward_obs])
-    # save_object(data, "./data/ucb_data_test_1")
+    data = MyClass([instant_regret_obs, instant_reward_obs])
+    save_object(data, "./data/ucb_1_f_c")
 
 main()
