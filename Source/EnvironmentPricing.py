@@ -13,7 +13,7 @@ class EnvironmentPricing:
         self.variance = variance  # (5, 3), variance of the reservation price for each product and each class
 
         self.lam = lambdas  # (3), the number of items bought ~ 1 + Poisson(lam[class])
-        self.alphas_par = alphas_par  # (6), parameters of the Dirichlet previously calculated from the expected values
+        self.alphas_par = alphas_par  # (3,6), parameters of the Dirichlet previously calculated from the expected values
         self.P = P  # (5, 5, 3) click probability of the secondary product from a primary product for each class
         self.secondary_products = secondary_products  # (5, 2) the two secondary products for each product in order
         self.lambda_secondary = lambda_secondary  # fixed probability to observe the second secondary product
@@ -85,7 +85,7 @@ class EnvironmentPricing:
         """
 
         current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
-                                           p=alpha_ratio)  # CASE -1: the customer goes to a competitor
+                                           p=alpha_ratio[extracted_class, :])  # CASE -1: the customer goes to a competitor
 
         number_objects = [0 for _ in range(5)]
         reward_per_object = [0 for _ in range(5)]
@@ -160,7 +160,10 @@ class EnvironmentPricing:
 
     # Returns the alpha ratio of the day
     def alpha_ratio_otd(self):
-        return np.random.dirichlet(self.alphas_par)
+        alpha_ratios = np.zeros((3,6))
+        for i in range(3):
+            alpha_ratios[i, :] = np.random.dirichlet(self.alphas_par[i, :])
+        return alpha_ratios
 
     def get_real_conversion_rates(self, class_):
         conv_rate = np.zeros((5, 4))

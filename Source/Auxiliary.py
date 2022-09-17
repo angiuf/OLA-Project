@@ -18,7 +18,9 @@ def generate_environment():
     costs = np.array([1.6, 0.6, 1, 0.8, 0.4])
     class_probability = np.array([0.4, 0.2, 0.4])
     lambdas = np.array([1, 2, 3])
-    alphas_par = np.array([5, 1, 1, 1, 1, 1])
+    alphas_par = np.array([[5, 1, 1, 1, 1, 1],
+                          [5, 1, 1, 1, 1, 1],
+                          [5, 1, 1, 1, 1, 1]])
     np.random.seed(6)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
     secondary_products = np.array([[1, 4],
@@ -32,16 +34,18 @@ def generate_environment():
                               lambda_secondary=0.5)
 
     real_conv_rates = np.zeros((5, 4))
+    real_alpha_par = np.zeros(6)
 
     for i in range(3):
         real_conv_rates += env1.get_real_conversion_rates(i) * class_probability[i]
+        real_alpha_par += alphas_par[i,:] * class_probability[i]
 
     model = {"n_prod": 5,
              "n_price": 4,
              "prices": prices,
              "cost": costs,
-             "real_alphas": alphas_par,
-             "real_alpha_ratio": alphas_par / np.sum(alphas_par),
+             "real_alphas": real_alpha_par,
+             "real_alpha_ratio": real_alpha_par / np.sum(real_alpha_par),
              "real_conversion_rates": real_conv_rates,
              "real_quantity": 3,
              "secondary_products": secondary_products,
@@ -71,7 +75,9 @@ def generate_environment_non_stat(horizon):
 
     lambdas = np.array([1, 2, 3])
 
-    alphas_par = np.array([5, 1, 1, 1, 1, 1])
+    alphas_par = np.array([[5, 1, 1, 1, 1, 1],
+                          [5, 1, 1, 1, 1, 1],
+                          [5, 1, 1, 1, 1, 1]])
 
     np.random.seed(5)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
