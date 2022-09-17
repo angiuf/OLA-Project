@@ -43,18 +43,21 @@ def generate_environment(f_c=True):
                               lambda_secondary=0.5)
 
     real_conv_rates = np.zeros((5, 4))
-    real_alphas_par = np.zeros(6)
+    real_alphas_ratio_class = np.zeros((3,6))
+    real_alphas_ratio = np.zeros(6)
+
 
     for i in range(3):
         real_conv_rates += env1.get_real_conversion_rates(i) * class_probability[i]
-        real_alphas_par += alphas_par[i, :] * class_probability[i]
+        real_alphas_ratio_class[i] = alphas_par[i, :] / np.sum(alphas_par[i, :])
+        real_alphas_ratio += real_alphas_ratio_class[i, :] * class_probability[i]
 
     model = {"n_prod": 5,
              "n_price": 4,
              "prices": prices,
              "cost": costs,
              "real_alphas": alphas_par,
-             "real_alpha_ratio": real_alphas_par / np.sum(real_alphas_par),
+             "real_alpha_ratio": real_alphas_ratio,
              "real_conversion_rates": real_conv_rates,
              "real_quantity": 3,
              "secondary_products": secondary_products,

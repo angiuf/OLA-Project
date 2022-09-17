@@ -24,7 +24,7 @@ class EnvironmentPricing:
         data = []
         for u in range(0, n_daily_users):
             extracted_class = np.random.choice(a=[0, 1, 2], p=self.class_probability)
-            extracted_alphas = alpha_ratio[extracted_class, :]
+            extracted_alphas = alpha_ratio[extracted_class]
             # [0,0] = children ; [1,0] = adult_male ; [1,1] adult_female
             extracted_features = np.zeros(2)
             if extracted_class == 0:
@@ -164,7 +164,7 @@ class EnvironmentPricing:
     def alpha_ratio_otd(self):
         alpha_ratios = np.zeros((3,6))
         for i in range(3):
-            alpha_ratios[i,:] = np.random.dirichlet(self.alphas_par[i, :])
+            alpha_ratios[i] = np.random.dirichlet(self.alphas_par[i])
         return alpha_ratios
 
     def get_real_conversion_rates(self, class_):
