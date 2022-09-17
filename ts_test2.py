@@ -1,6 +1,7 @@
 from Source.TSLearner2 import *
 from Source.Auxiliary import *
 from tqdm import trange
+from Source.Save_Load import *
 
 
 def main():
@@ -8,8 +9,8 @@ def main():
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 60
-    n_exp = 20
+    T = 120
+    n_exp = 100
     daily_user = 500
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
@@ -71,6 +72,9 @@ def main():
 
     show_results(instant_regret_obs, "TS test, second case: regret")
     show_reward(instant_reward_obs, "TS test, second case: reward")
+
+    # data = MyClass([instant_regret_obs, instant_reward_obs])
+    # save_object(data, "./data/ts_data_test_2")
 
 
 main()
