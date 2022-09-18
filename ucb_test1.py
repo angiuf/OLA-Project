@@ -25,19 +25,17 @@ def run(f_c=True):
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 60
-    n_exp = 20
-    daily_user = 100
+    T = 90
+    n_exp = 10
+    daily_user = 200
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
 
-    # optimal_act_rate = mc_simulation(model, real_conv_rates[range(5), optimal_arm], 5, 1000)
-    #
-    # optimal_reward = return_reward(model, prices[range(5), optimal_arm], real_conv_rates[range(5), optimal_arm],
-    #                                optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
+    optimal_act_rate = mc_simulation(model, real_conv_rates[range(5), optimal_arm], 5, 1000)
 
-    optimal_reward = simulate_arm_reward(env1, daily_user, optimal_arm)
+    optimal_reward = return_reward(model, prices[range(5), optimal_arm], real_conv_rates[range(5), optimal_arm],
+                                   optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
 
     print("Optimal reward: ", optimal_reward)
 

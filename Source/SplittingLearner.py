@@ -314,7 +314,7 @@ def hoeff_bound(mean, n_z, conf=0.05):
 
 
 def hoeff_bound_l(mean, n_z, conf=0.05):
-    return mean - np.sqrt(-np.log(conf) / (2 * n_z) * 20 ** 2)
+    return mean - np.sqrt(-np.log(conf) / (2 * n_z) * 10 ** 2)
 
 
 def clt_bound(mean, var, n):

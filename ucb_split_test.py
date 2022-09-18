@@ -3,21 +3,22 @@ from Source.SplittingLearner import *
 from Source.Auxiliary import *
 from tqdm import trange
 
+
 # TODO: implement all the algorithms with not fully connected click probability graph
 # TODO: check splitting condition (always splitting)
 # TODO: report
 
 def main():
     fully_i_regret, fully_i_reward = run()
-    not_fully_i_regret, not_fully_i_reward = run(False)
+    # not_fully_i_regret, not_fully_i_reward = run(False)
 
-    plt.figure(1, (16,9))
+    plt.figure(1, (16, 9))
     plt.suptitle("UCB test, split case")
 
     show_results(fully_i_regret, "Fully connected: regret", 221)
-    show_results(not_fully_i_regret, "Not fully connected: regret", 222)
+    # show_results(not_fully_i_regret, "Not fully connected: regret", 222)
     show_reward(fully_i_reward, "Fully connected: reward", 223)
-    show_reward(not_fully_i_reward, "Not fully connected: reward", 224)
+    # show_reward(not_fully_i_reward, "Not fully connected: reward", 224)
 
     plt.show()
 
@@ -27,8 +28,8 @@ def run(f_c=True):
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 90
-    n_exp = 2
+    T = 60
+    n_exp = 10
     daily_user = 200
 
     all_features = [[0, 0], [0, 1], [1, 0], [1, 1]]
@@ -49,12 +50,14 @@ def run(f_c=True):
         optimal_reward_c[c] = return_reward(model_c, prices_c[range(5), optimal_arm_c],
                                             real_conv_rates_c[range(5), optimal_arm_c],
                                             optimal_act_rate_c, model_c['real_alpha_ratio'], model_c['real_quantity'])
+
+        # optimal_reward_c[c] = simulate_arm_reward(env_c, daily_user, optimal_arm_c)
+
         print("Optimal reward of class ", c, " : ", optimal_reward_c[c])
 
         optimal_reward += optimal_reward_c[c] * model["class_probability"][c]
 
     print("\nOptimal reward: ", optimal_reward)
-
 
     learner = UCBLearner2(model.copy())
     instant_regret_obs = [[] for _ in range(n_exp)]
