@@ -79,7 +79,8 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
             previous_reward = rewards[idx]
             verbose_print('Selected arm: ', price_arm, 'with reward: ', rewards[idx])
 
-#Returns the expected reward that a customer can give to the ecommerce
+
+# Returns the expected reward that a customer can give to the ecommerce
 def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alphas, extracted_quantity):
     reward = 0
     n_prod = len(extracted_prices)
@@ -91,7 +92,8 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alp
 
     return reward
 
-#Computes a montecarlo simulation to compute the activation rates
+
+# Computes a montecarlo simulation to compute the activation rates
 def mc_simulation(model, extracted_cr, n_products, K=100, clicks='real_P'):
     act_rates = np.zeros((n_products, n_products))
     # K = number of simulation for each seeds
@@ -136,3 +138,17 @@ def round_recursive(model, seen_primary, primary, extracted_cr, clicks):
             if click_slot_2:
                 seen_primary[secondary_2] = True
                 round_recursive(model, seen_primary, secondary_2, extracted_cr, clicks)
+
+
+def simulate_arm_reward(env1, daily_user, pulled_arm):
+    data = []
+    K = 500
+    for k in range(K):
+        alpha_ratio = env1.alpha_ratio_otd()
+        data.append(env1.round_single_day(daily_user, alpha_ratio, pulled_arm).copy())
+    reward = 0
+    for k in range(500):
+        for user in range(daily_user):
+            reward += np.sum(data[k][user][0]) / daily_user
+    reward /= 500
+    return reward

@@ -20,8 +20,8 @@ class TSLearner2(Learner):
         samples = np.array(
             [[np.random.beta(a=self.alphas[i, j], b=self.betas[i, j]) for j in range(self.n_price)] for i in
              range(self.n_prod)])
-        self.model['cr_means'] = samples
-        arm_pulled = optimization_algorithm(self.model, False, rates="cr_means", alphas='alpha_means',
+        self.model['cr_ts'] = samples
+        arm_pulled = optimization_algorithm(self.model, False, rates="cr_ts", alphas='alpha_means',
                                             quantity='quantity_mean')
         return arm_pulled  # act optimistically towards the sampling
 
@@ -39,6 +39,7 @@ class TSLearner2(Learner):
 
         self.model['alpha_means'] = self.alpha_means
         self.model['quantity_mean'] = self.quantity_mean
+        self.model['cr_means'] = self.alphas / (self.alphas+self.betas)
 
     def printq(self):
         print(self.quantity_mean)

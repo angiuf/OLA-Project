@@ -5,26 +5,26 @@ from Source.EnvironmentPricing import EnvironmentPricing
 
 class NonStationaryEnvironment(EnvironmentPricing):
     # In this class mean and variance have size (n_phases, 5,3)
-    def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary,
+    def __init__(self, mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, class_probability, lambda_secondary,
                  horizon):
-        super().__init__(mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, lambda_secondary)
+        super().__init__(mean, variance, prices, costs, lambdas, alphas_par, P, secondary_products, class_probability, lambda_secondary)
         self.t = 0
         n_phases = self.mean.shape[2]
         self.phase_size = horizon / n_phases
 
-    def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled, class_probability):
+    def round_single_day(self, n_daily_users, alpha_ratio, arms_pulled):
         current_phase = int(self.t / self.phase_size)
         self.t += 1
         data = []
         for u in range(0, n_daily_users):
-            data.append(self.round_single_customer(alpha_ratio, arms_pulled, class_probability, current_phase))
+            data.append(self.round_single_customer(alpha_ratio, arms_pulled, self.class_probability, current_phase))
         return data
 
     def round_single_customer(self, alpha_ratio, arms_pulled, class_probability, current_phase):
         seen_primary = np.full(shape=5, fill_value=False)
         extracted_class = np.random.choice(a=[0, 1, 2], p=class_probability)
         current_product = np.random.choice(a=[-1, 0, 1, 2, 3, 4],
-                                           p=alpha_ratio)  # CASE -1: the customer goes to a competitor
+                                           p=alpha_ratio[extracted_class,:])  # CASE -1: the customer goes to a competitor
 
         number_objects = [0 for _ in range(5)]
         reward_per_object = [0 for _ in range(5)]

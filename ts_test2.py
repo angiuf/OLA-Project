@@ -2,9 +2,23 @@ from Source.TSLearner2 import *
 from Source.Auxiliary import *
 from tqdm import trange
 
-
 def main():
-    env1, model, class_probability = generate_environment()
+    fully_i_regret, fully_i_reward = run()
+    not_fully_i_regret, not_fully_i_reward = run(False)
+
+    plt.figure(1, (16,9))
+    plt.suptitle("TS test, second case")
+
+    show_results(fully_i_regret, "Fully connected: regret", 221)
+    show_results(not_fully_i_regret, "Not fully connected: regret", 222)
+    show_reward(fully_i_reward, "Fully connected: reward", 223)
+    show_reward(not_fully_i_reward, "Not fully connected: reward", 224)
+
+
+    plt.show()
+
+def run(f_c=True):
+    env1, model = generate_environment(f_c)
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
@@ -29,29 +43,10 @@ def main():
     for i in range(n_exp):
         print("Experiment number", i + 1)
 
-        for t in range(4):
-            pulled_arm = [t, t, t, t, t]
-            alpha_ratio = env1.alpha_ratio_otd()
-            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
-            cr_data = conv_data(data)
-            ar_data = alpha_data(data)
-            q_data = quantity_data(data)
-            learner.update(pulled_arm, cr_data, ar_data, q_data)
-
-            obs_reward = 0
-            if len(data):
-                for i_ in range(len(data)):
-                    obs_reward += np.sum(data[i_][0])
-
-                obs_reward /= len(data)
-
-            instant_regret_obs[i].append(optimal_reward - obs_reward)
-            instant_reward_obs[i].append(obs_reward)
-
-        for t in trange(T - 4):
+        for t in trange(T):
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
-            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
+            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm)
             cr_data = conv_data(data)
             ar_data = alpha_data(data)
             q_data = quantity_data(data)
@@ -69,8 +64,6 @@ def main():
 
         learner.reset()
 
-    show_results(instant_regret_obs, "TS test, second case: regret")
-    show_results(instant_reward_obs, "TS test, second case: reward")
-
+    return instant_regret_obs, instant_reward_obs
 
 main()

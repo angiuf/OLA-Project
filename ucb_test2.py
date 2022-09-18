@@ -2,15 +2,29 @@ from Source.UCBLearner2 import *
 from Source.Auxiliary import *
 from tqdm import trange
 
-
 def main():
-    env1, model, class_probability = generate_environment()
+    fully_i_regret, fully_i_reward = run()
+    not_fully_i_regret, not_fully_i_reward = run(False)
+
+    plt.figure(1, (16,9))
+    plt.suptitle("UCB test, second case")
+
+    show_results(fully_i_regret, "Fully connected: regret", 221)
+    show_results(not_fully_i_regret, "Not fully connected: regret", 222)
+    show_reward(fully_i_reward, "Fully connected: reward", 223)
+    show_reward(not_fully_i_reward, "Not fully connected: reward", 224)
+
+    plt.show()
+
+
+def run(f_c=True):
+    env1, model = generate_environment(f_c)
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
     T = 60
     n_exp = 20
-    daily_user = 500
+    daily_user = 200
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
@@ -19,6 +33,7 @@ def main():
 
     optimal_reward = return_reward(model, prices[range(5), optimal_arm], real_conv_rates[range(5), optimal_arm],
                                    optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
+
     print("Optimal reward: ", optimal_reward)
 
     learner = UCBLearner2(model)
@@ -31,7 +46,7 @@ def main():
         for t in trange(T):
             pulled_arm = learner.act()
             alpha_ratio = env1.alpha_ratio_otd()
-            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm, class_probability)
+            data = env1.round_single_day(daily_user, alpha_ratio, pulled_arm)
             cr_data = conv_data(data)
             ar_data = alpha_data(data)
             q_data = quantity_data(data)
@@ -49,8 +64,7 @@ def main():
 
         learner.reset()
 
-    show_results(instant_regret_obs, "UCB test, second case: regret")
-    show_results(instant_reward_obs, "UCB test, second case: reward")
+    return instant_regret_obs, instant_reward_obs
 
 
 main()

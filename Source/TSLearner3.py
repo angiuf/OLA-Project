@@ -18,8 +18,8 @@ class TSLearner3(Learner):
         samples = np.array(
             [[np.random.beta(a=self.alphas[i, j], b=self.betas[i, j]) for j in range(self.n_price)] for i in
              range(self.n_prod)])
-        self.model['cr_means'] = samples
-        arm_pulled = optimization_algorithm(self.model, False, rates="cr_means", clicks='clicks_means')
+        self.model['cr_ts'] = samples
+        arm_pulled = optimization_algorithm(self.model, False, rates="cr_ts", clicks='clicks_means')
         return arm_pulled  # act optimistically towards the sampling
 
     # Updates alphas and betas
