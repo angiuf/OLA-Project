@@ -66,7 +66,7 @@ def generate_environment(f_c = True):
                        class_probability[2],
              "class_probability": class_probability,
              "lambda_secondary": 0.5,
-             "daily_user": 1000
+             "daily_user": 200
              }
     return env1, model
 
@@ -318,3 +318,13 @@ def show_reward(instant_reward_obs, title, position):
     #                  mean - var,
     #                  mean + var, alpha=0.2)
     p.set_title(title)
+
+def calculate_reward(data):
+    obs_reward = 0
+    if len(data):
+        for i_ in range(len(data)):
+            obs_reward += np.sum(data[i_][0])
+
+        obs_reward /= len(data)
+
+    return obs_reward

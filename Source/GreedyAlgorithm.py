@@ -1,4 +1,5 @@
 from Source.EnvironmentPricing import *
+from Source.Auxiliary import *
 
 
 # Model is a dictionary containing real or estimated parameters:
@@ -18,7 +19,7 @@ from Source.EnvironmentPricing import *
 # Runs the optimization algorithm to find the best arm, rates is the string name of what is used as conversion rate,
 # e.g. to find the optimal arm we use the real conversion rates, in ucb we use means + widths, if act_rates is true
 # use the already computed activation rates
-def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", alphas="real_alpha_ratio",
+def optimization_algorithm(model, env=None, verbose=False, rates="real_conversion_rates", alphas="real_alpha_ratio",
                            quantity="real_quantity", clicks='real_P', phase=-1):
     verbose_print = print if verbose else lambda *a, **k,: None
     n_prod = model["n_prod"]
@@ -26,23 +27,32 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
     price = model["prices"]
     K = 50  # number of seeds for MC simulation
     if rates == "real_conversion_rates":
-        K = 1000
+        real = True
+    else:
+        real = False
 
     price_arm = np.zeros(n_prod).astype('int')  # These are the indexes of the selected price arm
     rewards = np.zeros(n_prod)  # rewards of current arm  increased by one
-    extracted_prices = price[range(n_prod), price_arm]
-    # In a stationary environment there aren't any phases so the value is set to -1
-    if phase == -1:
-        extracted_cr = model[rates][range(n_prod), price_arm]
+
+    if real:
+        initial_reward = return_reward2(model, env, price_arm)
+        previous_reward = initial_reward
+
     else:
-        extracted_cr = model[rates][phase, range(n_prod), price_arm]
-    extracted_alpha = model[alphas]
-    extracted_quantity = model[quantity]
+        extracted_prices = price[range(n_prod), price_arm]
+        # In a stationary environment there aren't any phases so the value is set to -1
+        if phase == -1:
+            extracted_cr = model[rates][range(n_prod), price_arm]
+        else:
+            extracted_cr = model[rates][phase, range(n_prod), price_arm]
+        extracted_alpha = model[alphas]
+        extracted_quantity = model[quantity]
 
-    act_rate = mc_simulation(model, extracted_cr, n_prod, K, clicks)
+        act_rate = mc_simulation(model, extracted_cr, n_prod, K, clicks)
+        initial_reward = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha,
+                                       extracted_quantity)
+        previous_reward = initial_reward
 
-    initial_reward = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha, extracted_quantity)
-    previous_reward = initial_reward
     verbose_print('Initial reward: ', initial_reward)
     while True:
         max_arms_counter = 0
@@ -53,16 +63,23 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
             else:
                 add_price = np.zeros(n_prod).astype('int')
                 add_price[i] = 1
-                if phase == -1:
-                    extracted_cr = model[rates][range(n_prod), price_arm + add_price]
+
+                if real:
+                    rewards[i] = return_reward2(model, env, price_arm)
                 else:
-                    extracted_cr = model[rates][phase, range(n_prod), price_arm + add_price]
-                extracted_prices = price[range(n_prod), price_arm + add_price]
+                    extracted_prices = price[range(n_prod), price_arm]
+                    # In a stationary environment there aren't any phases so the value is set to -1
+                    if phase == -1:
+                        extracted_cr = model[rates][range(n_prod), price_arm]
+                    else:
+                        extracted_cr = model[rates][phase, range(n_prod), price_arm]
+                    extracted_alpha = model[alphas]
+                    extracted_quantity = model[quantity]
 
-                act_rate = mc_simulation(model, extracted_cr, n_prod, K, clicks)
+                    act_rate = mc_simulation(model, extracted_cr, n_prod, K, clicks)
+                    rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha,
+                                               extracted_quantity)
 
-                rewards[i] = return_reward(model, extracted_prices, extracted_cr, act_rate, extracted_alpha,
-                                           extracted_quantity)
                 verbose_print("Reward of arm: ", price_arm + add_price, "is: ", rewards[i])
 
         if max_arms_counter == n_prod:
@@ -71,7 +88,10 @@ def optimization_algorithm(model, verbose=False, rates="real_conversion_rates", 
 
         if rewards[idx] <= previous_reward:
             verbose_print('Final arm chosen: ', price_arm)
-            return price_arm
+            if real:
+                return price_arm, previous_reward
+            else:
+                return price_arm
         else:
             add_price = np.zeros(n_prod).astype('int')
             add_price[idx] = 1
@@ -91,6 +111,16 @@ def return_reward(model, extracted_prices, extracted_cr, act_prob, extracted_alp
                     extracted_prices[j] - model["cost"][j]) * extracted_quantity
 
     return reward
+
+
+def return_reward2(model, env, pulled_arm, K=50):
+    rewards = []
+    for _ in range(K):
+        alpha_ratio = env.alpha_ratio_otd()
+        data = env.round_single_day(model["daily_user"], alpha_ratio, pulled_arm)
+        rewards.append(calculate_reward(data))
+    np_rewards = np.array(rewards)
+    return np.mean(np_rewards)
 
 
 # Computes a montecarlo simulation to compute the activation rates

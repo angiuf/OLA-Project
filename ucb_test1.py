@@ -24,17 +24,18 @@ def run(f_c=True):
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 50
+    T = 180
     n_exp = 2
-    daily_user = 100
+    daily_user = 200
 
-    optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
+    optimal_arm, optimal_reward = optimization_algorithm(model, env1, True)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
-
+    """
     optimal_act_rate = mc_simulation(model, real_conv_rates[range(5), optimal_arm], 5, 10000)
 
     optimal_reward = return_reward(model, prices[range(5), optimal_arm], real_conv_rates[range(5), optimal_arm],
                                    optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
+    """
     print("Optimal reward: ", optimal_reward)
 
     learner = UCBLearner1(model)
