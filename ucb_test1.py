@@ -4,11 +4,12 @@ from Source.UCBLearner1 import *
 from Source.Auxiliary import *
 from tqdm import trange
 
+
 def main():
     fully_i_regret, fully_i_reward = run()
     not_fully_i_regret, not_fully_i_reward = run(False)
 
-    plt.figure(1, (16,9))
+    plt.figure(1, (16, 9))
     plt.suptitle("UCB test, first case")
 
     show_results(fully_i_regret, "Fully connected: regret", 221)
@@ -24,17 +25,20 @@ def run(f_c=True):
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
 
-    T = 50
-    n_exp = 2
+    T = 60
+    n_exp = 20
     daily_user = 100
 
     optimal_arm = optimization_algorithm(model, False)  # pull the optimal arm
     print("Optimal_arm: ", optimal_arm)
 
-    optimal_act_rate = mc_simulation(model, real_conv_rates[range(5), optimal_arm], 5, 10000)
+    # optimal_act_rate = mc_simulation(model, real_conv_rates[range(5), optimal_arm], 5, 1000)
+    #
+    # optimal_reward = return_reward(model, prices[range(5), optimal_arm], real_conv_rates[range(5), optimal_arm],
+    #                                optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
 
-    optimal_reward = return_reward(model, prices[range(5), optimal_arm], real_conv_rates[range(5), optimal_arm],
-                                   optimal_act_rate, model['real_alpha_ratio'], model['real_quantity'])
+    optimal_reward = simulate_arm_reward(env1, daily_user, optimal_arm)
+
     print("Optimal reward: ", optimal_reward)
 
     learner = UCBLearner1(model)
@@ -42,7 +46,7 @@ def run(f_c=True):
     instant_reward_obs = [[] for _ in range(n_exp)]
 
     for i in range(n_exp):
-        print("Experiment number", i+1)
+        print("Experiment number", i + 1)
 
         for t in trange(T):
             pulled_arm = learner.act()
@@ -63,5 +67,6 @@ def run(f_c=True):
         learner.reset()
 
     return instant_regret_obs, instant_reward_obs
+
 
 main()

@@ -4,23 +4,23 @@ import matplotlib.pyplot as plt
 
 # function that generates a standard environment and returns the aggregated model and class probability
 def generate_environment(f_c = True):
-    average = np.array([[7, 10, 5],
-                        [2.5, 1, 3.5],
-                        [3.5, 5, 2],
+    average = np.array([[7, 9, 6],
+                        [2.5, 2, 3.5],
+                        [3.5, 5, 3],
                         [1.5, 4, 3],
-                        [1.5, 1, 2.5]])
+                        [1.5, 2, 2.5]])
     variance = np.array([[1, 1, 1],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5],
                          [0.5, 0.5, 0.5]])
-    prices = generate_prices(np.array([6, 2, 3.5, 2.5, 1]))
+    prices = generate_prices(np.array([8, 3, 5, 4, 2]))
     costs = np.array([1.6, 0.6, 1, 0.8, 0.4])
     class_probability = np.array([0.4, 0.2, 0.4])
     lambdas = np.array([1, 2, 3])
-    alphas_par = np.array([[5, 1, 1, 1, 1, 1],
-                          [5, 1, 1, 1, 1, 1],
-                          [5, 1, 1, 1, 1, 1]])
+    alphas_par = np.array([[5, 1, 1, 3, 1, 2],
+                          [5, 1, 2, 1, 1, 3],
+                          [5, 1, 1, 2, 1, 2]])
     np.random.seed(6)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
 

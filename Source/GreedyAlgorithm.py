@@ -138,3 +138,17 @@ def round_recursive(model, seen_primary, primary, extracted_cr, clicks):
             if click_slot_2:
                 seen_primary[secondary_2] = True
                 round_recursive(model, seen_primary, secondary_2, extracted_cr, clicks)
+
+
+def simulate_arm_reward(env1, daily_user, pulled_arm):
+    data = []
+    K = 500
+    for k in range(K):
+        alpha_ratio = env1.alpha_ratio_otd()
+        data.append(env1.round_single_day(daily_user, alpha_ratio, pulled_arm).copy())
+    reward = 0
+    for k in range(500):
+        for user in range(daily_user):
+            reward += np.sum(data[k][user][0]) / daily_user
+    reward /= 500
+    return reward
