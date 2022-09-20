@@ -18,7 +18,7 @@ def main():
 
 
 def run(f_c=True):
-    T = 180
+    T = 90
     env1, model = generate_environment_non_stat(T, f_c)
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]

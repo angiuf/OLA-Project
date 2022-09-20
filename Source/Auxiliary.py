@@ -358,7 +358,9 @@ def show_reward_non_stat(instant_reward_obs, opt_reward, title, position):
     plt.fill_between(range(len(mean)),
                      mean - var,
                      mean + var, alpha=0.2)
+    phase_len = len(instant_reward_obs[0]) / 3
+    print(phase_len)
     if opt_reward is not None:
         for idx, rew in enumerate(opt_reward):
-            plt.hlines(rew, xmin=60*idx, xmax=60*(idx+1))
+            plt.hlines(rew, xmin=phase_len*idx, xmax=phase_len*(idx+1))
     p.set_title(title)

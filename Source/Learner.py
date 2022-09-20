@@ -14,9 +14,9 @@ class Learner:
         self.reward_per_quantity = []  # list to collect the number of objects bought by the users
         self.reward_per_clicks = [[[] for _ in range(self.n_prod)] for _ in range(self.n_prod)]
 
-        self.model_0 = model.copy()
+        self.model_0 = model.copy() # copy of the model. Used to reset the learner
         self.model = model
-        self.feat = []
+        self.feat = [] # if the learner is specific for a class, the features of that class will be inserted here
 
     # we need two functions: one that sends actions to the environment, the other that collects the obs and
     # updates the inner functioning of the algorithm. Both of this function are specific to the learning algorithm
