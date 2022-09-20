@@ -144,7 +144,7 @@ def generate_environment_non_stat(horizon, f_c=True):
     return env2, model
 
 
-def generate_environment_class(c):
+def generate_environment_class(c, f_c=True):
     average = np.array([[7, 9, 6],
                         [2.5, 2, 3.5],
                         [3.5, 5, 3],
@@ -165,6 +165,17 @@ def generate_environment_class(c):
                            [50, 10, 10, 20, 10, 20]])
     np.random.seed(6)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
+    if not f_c:
+        P[0, 1, 0] = 0
+        P[2, 3, 0] = 0
+        P[3, 2, 0] = 0
+
+        P[0, 4, 1] = 0
+        P[2, 0, 1] = 0
+
+        P[1, 2, 2] = 0
+        P[3, 4, 2] = 0
+        P[4, 1, 2] = 0
     secondary_products = np.array([[1, 4],
                                    [0, 2],
                                    [3, 0],
@@ -349,5 +360,5 @@ def show_reward_non_stat(instant_reward_obs, opt_reward, title, position):
                      mean + var, alpha=0.2)
     if opt_reward is not None:
         for idx, rew in enumerate(opt_reward):
-            plt.hlines(rew, xmin=66*idx, xmax=66*(idx+1))
+            plt.hlines(rew, xmin=60*idx, xmax=60*(idx+1))
     p.set_title(title)

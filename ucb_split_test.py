@@ -38,7 +38,7 @@ def run(f_c=True):
     optimal_reward_c = np.zeros(3)
 
     for c in range(3):
-        env_c, model_c = generate_environment_class(c)
+        env_c, model_c = generate_environment_class(c, f_c)
         real_conv_rates_c = model_c["real_conversion_rates"]
         prices_c = model_c["prices"]
 

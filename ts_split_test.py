@@ -34,7 +34,7 @@ def run(f_c=True):
     optimal_reward_c = np.zeros(3)
 
     for c in range(3):
-        env_c, model_c = generate_environment_class(c)
+        env_c, model_c = generate_environment_class(c, f_c)
         real_conv_rates_c = model_c["real_conversion_rates"]
         prices_c = model_c["prices"]
 
@@ -84,8 +84,8 @@ def run(f_c=True):
         learner.feat = all_features
         learners = first_split(model.copy(), alldata.copy(), False, learner.model.copy())
 
-        for ler in learners:
-            print(ler.feat)
+        # for ler in learners:
+        #     print(ler.feat)
         if learners == []:
             learners = [learner]
 
@@ -148,8 +148,8 @@ def run(f_c=True):
 
             if t % 14 == 0 and t > 0:
                 learners = first_split(model.copy(), alldata.copy(), False, learner.model.copy())
-                for ler in learners:
-                    print(ler.feat)
+                # for ler in learners:
+                #     print(ler.feat)
                 if learners == []:
                     learners = [learner]
 
