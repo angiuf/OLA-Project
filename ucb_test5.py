@@ -11,21 +11,21 @@ def main():
 
     show_results(fully_i_regret, "Fully connected: regret", 221)
     show_results(not_fully_i_regret, "Not fully connected: regret", 222)
-    show_reward(fully_i_reward, "Fully connected: reward", 223)
-    show_reward(not_fully_i_reward, "Not fully connected: reward", 224)
+    show_reward(fully_i_reward, opt_reward=None, title="Fully connected: reward", position=223)
+    show_reward(not_fully_i_reward, opt_reward=None, title="Not fully connected: reward", position=224)
 
     plt.show()
 
 
 def run(f_c=True):
-    T = 99
+    T = 180
     env1, model = generate_environment_non_stat(T, f_c)
     real_conv_rates = model["real_conversion_rates"]
     prices = model["prices"]
     phase_size = T / model["n_phase"]
 
     n_exp = 20
-    daily_user = 500
+    daily_user = 200
 
     optimal_arm = np.zeros((model["n_phase"], model["n_prod"])).astype(int)
     optimal_reward = np.zeros(model["n_phase"])

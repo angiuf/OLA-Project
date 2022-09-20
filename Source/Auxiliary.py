@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 # function that generates a standard environment and returns the aggregated model and class probability
-def generate_environment(f_c = True):
+def generate_environment(f_c=True):
     average = np.array([[7, 9, 6],
                         [2.5, 2, 3.5],
                         [3.5, 5, 3],
@@ -21,8 +21,8 @@ def generate_environment(f_c = True):
     class_probability = np.array([0.4, 0.2, 0.4])
     lambdas = np.array([1, 2, 3])
     alphas_par = np.array([[50, 10, 10, 30, 10, 20],
-                          [50, 10, 20, 10, 10, 30],
-                          [50, 10, 10, 20, 10, 20]])
+                           [50, 10, 20, 10, 10, 30],
+                           [50, 10, 10, 20, 10, 20]])
     np.random.seed(6)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
 
@@ -53,7 +53,7 @@ def generate_environment(f_c = True):
 
     for i in range(3):
         real_conv_rates += env1.get_real_conversion_rates(i) * class_probability[i]
-        real_alpha_par += alphas_par[i,:] * class_probability[i]
+        real_alpha_par += alphas_par[i, :] * class_probability[i]
 
     model = {"n_prod": 5,
              "n_price": 4,
@@ -74,7 +74,7 @@ def generate_environment(f_c = True):
 
 
 # This function given a time horizon returns the non stationary environment with the aggregated model and class, probability
-def generate_environment_non_stat(horizon, f_c = True):
+def generate_environment_non_stat(horizon, f_c=True):
     average = np.array([[[7, 9, 10], [4, 4, 3.5], [4, 4, 5], [4, 3.5, 5], [1.5, 2, 2]],
                         [[6, 8, 9], [1.5, 2, 2], [3, 3, 4], [2, 2.5, 2.5], [1, 1.5, 1]],
                         [[8, 11, 11.5], [2, 3, 3], [5, 5.5, 6.5], [3, 3, 3.5], [2, 2, 2]]])
@@ -90,8 +90,8 @@ def generate_environment_non_stat(horizon, f_c = True):
     lambdas = np.array([1, 2, 3])
 
     alphas_par = np.array([[50, 10, 10, 30, 10, 20],
-                          [50, 10, 20, 10, 10, 30],
-                          [50, 10, 10, 20, 10, 20]])
+                           [50, 10, 20, 10, 10, 30],
+                           [50, 10, 10, 20, 10, 20]])
 
     np.random.seed(5)
     P = np.random.uniform(0.1, 0.5, size=(5, 5, 3))
@@ -142,6 +142,7 @@ def generate_environment_non_stat(horizon, f_c = True):
              "daily_user": 1000
              }
     return env2, model
+
 
 def generate_environment_class(c):
     average = np.array([[7, 9, 6],
@@ -293,13 +294,13 @@ def show_results(collected_data, title, position):
 
     p.plot(cumulative_collected_data, color='C3', label='Observed')
     p.fill_between(range(len(cumulative_collected_data)),
-                     cumulative_collected_data - 2*cumulative_collected_data_std,
-                     cumulative_collected_data + 2*cumulative_collected_data_std, alpha=0.2)
+                   cumulative_collected_data - cumulative_collected_data_std,
+                   cumulative_collected_data + cumulative_collected_data_std, alpha=0.2)
     p.set_title(title)
     p.legend()
 
 
-def show_reward(instant_reward_obs, title, position):
+def show_reward(instant_reward_obs, opt_reward, title, position):
     n_exp = len(instant_reward_obs)
     instant_reward_obs_t = []
     for i in range(len(instant_reward_obs[0])):
@@ -317,7 +318,9 @@ def show_reward(instant_reward_obs, title, position):
     p = plt.subplot(position)
 
     p.plot(mean, color='C3', label='Observed')
-    # plt.fill_between(range(len(mean)),
-    #                  mean - var,
-    #                  mean + var, alpha=0.2)
+    plt.fill_between(range(len(mean)),
+                     mean - var,
+                     mean + var, alpha=0.2)
+    if opt_reward is not None:
+        plt.axhline(opt_reward)
     p.set_title(title)
