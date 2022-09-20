@@ -324,3 +324,30 @@ def show_reward(instant_reward_obs, opt_reward, title, position):
     if opt_reward is not None:
         plt.axhline(opt_reward)
     p.set_title(title)
+
+
+def show_reward_non_stat(instant_reward_obs, opt_reward, title, position):
+    n_exp = len(instant_reward_obs)
+    instant_reward_obs_t = []
+    for i in range(len(instant_reward_obs[0])):
+        instant_reward_obs_t.append([])
+        for j in range(n_exp):
+            instant_reward_obs_t[i].append(instant_reward_obs[j][i])
+
+    mean = [np.mean(i) for i in instant_reward_obs_t]
+    var = [np.std(i) for i in instant_reward_obs_t]
+    mean.insert(0, 0)
+    var.insert(0, 0)
+    mean = np.array(mean)
+    var = np.array(var)
+
+    p = plt.subplot(position)
+
+    p.plot(mean, color='C3', label='Observed')
+    plt.fill_between(range(len(mean)),
+                     mean - var,
+                     mean + var, alpha=0.2)
+    if opt_reward is not None:
+        for idx, rew in enumerate(opt_reward):
+            plt.hlines(rew, xmin=66*idx, xmax=66*(idx+1))
+    p.set_title(title)

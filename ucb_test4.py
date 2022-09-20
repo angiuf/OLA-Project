@@ -2,17 +2,19 @@ from Source.UCBLearner4 import *
 from Source.Auxiliary import *
 from tqdm import trange
 
-def main():
-    fully_i_regret, fully_i_reward = run()
-    not_fully_i_regret, not_fully_i_reward = run(False)
 
-    plt.figure(1, (16,9))
+def main():
+    fully_i_regret, fully_i_reward, opt_rew = run()
+    not_fully_i_regret, not_fully_i_reward, not_fully_opt_rew = run(False)
+
+    plt.figure(1, (16, 9))
     plt.suptitle("UCB test, fourth case")
 
     show_results(fully_i_regret, "Fully connected: regret", 221)
     show_results(not_fully_i_regret, "Not fully connected: regret", 222)
-    show_reward(fully_i_reward, opt_reward=None, title="Fully connected: reward", position=223)
-    show_reward(not_fully_i_reward, opt_reward=None, title="Not fully connected: reward", position=224)
+    show_reward_non_stat(fully_i_reward, opt_reward=opt_rew, title="Fully connected: reward", position=223)
+    show_reward_non_stat(not_fully_i_reward, opt_reward=not_fully_opt_rew, title="Not fully connected: reward",
+                         position=224)
 
     plt.show()
 
@@ -24,7 +26,7 @@ def run(f_c=True):
     prices = model["prices"]
     phase_size = T / model["n_phase"]
 
-    n_exp = 20
+    n_exp = 1
     daily_user = 200
 
     optimal_arm = np.zeros((model["n_phase"], model["n_prod"])).astype(int)
@@ -42,13 +44,12 @@ def run(f_c=True):
     print("Optimal reward: ", optimal_reward)
     print("Optimal_arm: ", optimal_arm)
 
-    learner = UCBLearner4(model, 10)
+    learner = UCBLearner4(model, 15)
     instant_regret_obs = [[] for _ in range(n_exp)]
     instant_reward_obs = [[] for _ in range(n_exp)]
 
-
     for i in range(n_exp):
-        print("Experiment number", i+1)
+        print("Experiment number", i + 1)
 
         for t in trange(T):
             phase = int(t / phase_size)
@@ -68,12 +69,10 @@ def run(f_c=True):
             instant_regret_obs[i].append(optimal_reward[phase] - obs_reward)
             instant_reward_obs[i].append(obs_reward)
 
-
         learner.reset()
         env1.t = 0
 
-    return instant_regret_obs, instant_reward_obs
-
+    return instant_regret_obs, instant_reward_obs, optimal_reward
 
 
 main()
