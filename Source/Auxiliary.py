@@ -124,7 +124,7 @@ def generate_environment_non_stat(horizon, f_c=True):
     for i in range(3):
         for j in range(3):
             real_conv_rates[i] += env2.get_real_conversion_rates(j, i) * class_probability[j]
-            real_alpha_par += alphas_par[i, :] * class_probability[i]
+        real_alpha_par += alphas_par[i, :] * class_probability[i]
 
     model = {"n_prod": 5,
              "n_price": 4,
