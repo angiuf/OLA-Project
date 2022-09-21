@@ -5,7 +5,7 @@ After having set an hypotethical cost of production c for each product, we dec
 
 We divided the users in three classes: children, men and women. This division allowed us to provide each kind of user with a different demand curve. To determine the class, we have two binary features (children/adult, male/female), male and female children are placed in the class children while adult males and adult females are respectively men and women.
 
-{:.center}![image](https://user-images.githubusercontent.com/79787310/191463513-aed681d6-21a7-4cef-9196-0f554715ca9f.png)
+->![image](https://user-images.githubusercontent.com/79787310/191463513-aed681d6-21a7-4cef-9196-0f554715ca9f.png)<-
 
 Every day, there is a random number of potential new customers. In particular, every single customer can land on the webpage in which one of the 5 products is primary or on the webpage of a product sold by a (non-strategic) competitor. To model this behavior, each day we sample from a Dirichlet distribution the proportions of users landing on each webpage . The parameters of the Dirichlet are different in each class, representing the case in which users of different class are more interested in different products. 
 
