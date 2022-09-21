@@ -25,4 +25,4 @@ More details can be found in the code and you can try how they work through the 
 - [__Enrico Paglia__](https://github.com/EnricoPaglia) (enrico.pagliai@mail.polimi.it)
 - [__Andrea Giuffrida__](https://github.com/angiuf) (andrea.giuffrida@mail.polimi.it)
 - [__Giovanni Battista__](https://github.com/gbpollam) (giovannibattista.pollam@mail.polimi.it)
-- [__Camilla Caroni__] (camilla.caroni@mail.polimi.it)
+- __Camilla Caroni__ (camilla.caroni@mail.polimi.it)
